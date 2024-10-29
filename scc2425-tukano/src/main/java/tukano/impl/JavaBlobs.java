@@ -4,7 +4,6 @@ import static java.lang.String.format;
 import static tukano.api.Result.error;
 import static tukano.api.Result.ErrorCode.FORBIDDEN;
 
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import tukano.api.Blobs;
@@ -55,16 +54,6 @@ public class JavaBlobs implements Blobs {
 	}
 
 	@Override
-	public Result<Void> downloadToSink(String blobId, Consumer<byte[]> sink, String token) {
-		Log.info(() -> format("downloadToSink : blobId = %s, token = %s\n", blobId, token));
-
-		if( ! validBlobId( blobId, token ) )
-			return error(FORBIDDEN);
-
-		return storage.read( toPath(blobId), sink);
-	}
-
-	@Override
 	public Result<Void> delete(String blobId, String token) {
 		Log.info(() -> format("delete : blobId = %s, token=%s\n", blobId, token));
 	
@@ -85,15 +74,10 @@ public class JavaBlobs implements Blobs {
 	}
 	
 	private boolean validBlobId(String blobId, String token) {		
-		System.out.println( toURL(blobId));
-		return Token.isValid(token, toURL(blobId));
+		return Token.isValid(token, blobId);
 	}
 
 	private String toPath(String blobId) {
 		return blobId.replace("+", "/");
-	}
-	
-	private String toURL( String blobId ) {
-		return baseURI + blobId ;
 	}
 }
