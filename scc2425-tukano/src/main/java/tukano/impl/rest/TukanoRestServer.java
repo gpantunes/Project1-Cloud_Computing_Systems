@@ -9,7 +9,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import tukano.impl.Token;
 import utils.Args;
 import utils.IP;
-import utils.Props;
 
 
 public class TukanoRestServer {

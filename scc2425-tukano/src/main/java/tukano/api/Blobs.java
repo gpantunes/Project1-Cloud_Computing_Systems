@@ -1,7 +1,5 @@
 package tukano.api;
 
-import java.util.function.Consumer;
-
 /**
  * Interface of blob service for storing short videos media ...
  */
@@ -32,27 +30,21 @@ public interface Blobs {
 	 */
 	Result<byte[]> download(String blobId, String token);
 
-	/**
-	 * Downloads a short video blob resource as a result suitable for streaming
-	 * large-sized byte resources 
-	 * 
-	 * The default implementation just sinks a single chunk of bytes taken from download(blobId)
-	 * 
-	 * @param blobId the id of the blob
-	 * @param sink - the consumer of the chunks of data
-	 * @return (OK,), if the blob exists;
-	 *		   NOT_FOUND, if no blob matches the provided blobId
-	 */
-	default Result<Void> downloadToSink(String blobId, Consumer<byte[]> sink, String token) {
-		var res = download(blobId, token);
-		if (!res.isOK())
-			return Result.error(res.error());
 
-		sink.accept(res.value());
-		return Result.ok();
-	}
-	
+	/**
+	 * Deletes a short video blob resource.
+	 * 
+	 * @param blobId the id of the blob;
+	 * @return (OK, void), if the blob exists and was deleted;
+	 * 			 NOT_FOUND, if no blob matches the provided blobId
+	 */
 	Result<Void> delete( String blobId, String token );
 	
+
+	/**
+	 * Deletes all short video blob resources from a given userId.
+	 * 
+	 * @param userid the id of the owner of the blobs;
+	 */
 	Result<Void> deleteAllBlobs( String userId, String token );
 }
