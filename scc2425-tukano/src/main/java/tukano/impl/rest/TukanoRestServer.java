@@ -47,7 +47,7 @@ public class TukanoRestServer {
 	public static void main(String[] args) throws Exception {
 		Args.use(args);
 		
-		Token.setSecret( Args.valueOf("-secret", ""));
+		Token.setSecret( Args.valueOf("-secret", "abc"));
 //		Props.load( Args.valueOf("-props", "").split(","));
 		
 		new TukanoRestServer().start();
