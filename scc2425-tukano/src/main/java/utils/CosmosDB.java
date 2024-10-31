@@ -48,7 +48,6 @@ public class CosmosDB {
                 .contentResponseOnWriteEnabled(true)
                 .buildClient();
 
-                
         String callOrgininClass = Thread.currentThread().getStackTrace()[2].getClassName();
 
         if ("JavaUsers".equals(callOrgininClass)) {
@@ -121,7 +120,7 @@ public class CosmosDB {
 
     public <T> Result<T> updateOne(T obj) {
         try (Jedis jedis = RedisCache.getCachePool().getResource()) {
-            jedis.del(String.valueOf(obj.hashCode()));
+            jedis.set(String.valueOf(obj.hashCode()).getBytes(), serialize(obj));
         } catch (Exception e) {
             e.printStackTrace();
             return Result.error(ErrorCode.INTERNAL_ERROR);
@@ -130,6 +129,12 @@ public class CosmosDB {
     }
 
     public <T> Result<T> insertOne(T obj) {
+        try (Jedis jedis = RedisCache.getCachePool().getResource()) {
+            jedis.set(String.valueOf(obj.hashCode()).getBytes(), serialize(obj));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(ErrorCode.INTERNAL_ERROR);
+        }
         return tryCatch(() -> container.createItem(obj).getItem());
     }
 
