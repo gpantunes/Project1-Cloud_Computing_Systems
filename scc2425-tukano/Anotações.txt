@@ -1,0 +1,4 @@
+No NoSQL não usamos Hibernate
+No PostgreSQL usamos Hibernate
+
+Containers para Likes/Followers ou Followers nos Users e Likes nos Shorts
