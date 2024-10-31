@@ -149,7 +149,7 @@ public class CosmosDBShorts {
         }
     }
 
-    public <T> Result<List<T>> query(String fmt, Object... args, Class<T> clazz) {
+    public <T> Result<List<T>> query(Class<T> clazz, String fmt, Object... args) {
         try (Jedis jedis = RedisCache.getCachePool().getResource()) {
             byte[] dataOnCache = jedis.get(String.valueOf(String.format(fmt, args).hashCode()).getBytes());
 
