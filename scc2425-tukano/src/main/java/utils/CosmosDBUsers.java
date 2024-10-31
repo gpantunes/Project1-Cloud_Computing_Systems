@@ -14,9 +14,9 @@ import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.PartitionKey;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.netty.handler.codec.http.HttpContentEncoder;
-import main.java.tukano.api.*;
-import main.java.tukano.api.Result.ErrorCode;
+//import io.netty.handler.codec.http.HttpContentEncoder;
+import tukano.api.*;
+import tukano.api.Result.ErrorCode;
 import redis.clients.jedis.Jedis;
 
 public class CosmosDBUsers {

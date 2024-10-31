@@ -14,21 +14,21 @@ import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.PartitionKey;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-//import io.netty.handler.codec.http.HttpContentEncoder;
-import tukano.api.*;
-import tukano.api.Result.ErrorCode;
+import io.netty.handler.codec.http.HttpContentEncoder;
+import main.java.tukano.api.*;
+import main.java.tukano.api.Result.ErrorCode;
 import redis.clients.jedis.Jedis;
 
-public class CosmosDBShorts {
+public class CosmosDBLayer {
 
     private static final String CONNECTION_URL = "https://scc232470735.documents.azure.com:443/"; // replace with your own
     private static final String DB_KEY = "gHcQf69MEY3KzxCNPZaMOnGF8fWtL9cr0uFrVwZyXZZdYOV7UR5zBecvEjugwDQk1qXAmwOsTr9RACDbv0MnUQ==";
     private static final String DB_NAME = "scc232470735";
-    private static final String CONTAINER = "shorts";
+    private static final String CONTAINER = "users";
 
-    private static CosmosDBShorts instance;
+    private static CosmosDBLayer instance;
 
-    public static synchronized CosmosDBShorts getInstance() {
+    public static synchronized CosmosDBLayer getInstance() {
         if (instance != null) {
             return instance;
         }
@@ -43,7 +43,7 @@ public class CosmosDBShorts {
                 .connectionSharingAcrossClientsEnabled(true)
                 .contentResponseOnWriteEnabled(true)
                 .buildClient();
-        instance = new CosmosDBShorts(client);
+        instance = new CosmosDBLayer(client);
         return instance;
 
     }
@@ -52,15 +52,8 @@ public class CosmosDBShorts {
     private CosmosDatabase db;
     private CosmosContainer container;
 
-    public CosmosDBShorts(CosmosClient client) {
+    public CosmosDBLayer(CosmosClient client) {
         this.client = client;
-    }
-
-    public CosmosContainer getContainer() {
-        if (container != null) {
-            init();
-        }
-        return container;
     }
 
     private synchronized void init() {
@@ -149,7 +142,7 @@ public class CosmosDBShorts {
         }
     }
 
-    public <T> Result<List<T>> query(Class<T> clazz, String fmt, Object... args) {
+    public <T> Result<List<T>> query(String fmt, Object... args, Class<T> clazz) {
         try (Jedis jedis = RedisCache.getCachePool().getResource()) {
             byte[] dataOnCache = jedis.get(String.valueOf(String.format(fmt, args).hashCode()).getBytes());
 

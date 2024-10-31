@@ -8,15 +8,17 @@ import static tukano.api.Result.errorOrVoid;
 import static tukano.api.Result.ok;
 import static tukano.api.Result.ErrorCode.BAD_REQUEST;
 import static tukano.api.Result.ErrorCode.FORBIDDEN;
-import static tukano.api.Result.ErrorCode.OK;
-import static utils.DB.getOne;
+//import static tukano.api.Result.ErrorCode.OK;
+//import static utils.DB.getOne;
+
 
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 
 import com.azure.cosmos.CosmosContainer;
-import com.azure.cosmos.CosmosException;
+//import com.azure.cosmos.CosmosException;
+
 import com.azure.cosmos.models.CosmosItemRequestOptions;
 import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.PartitionKey;
@@ -47,7 +49,7 @@ public class JavaShorts implements Shorts {
     private JavaShorts() {
     }
 
-    @SuppressWarnings("unchecked")
+  
     @Override
     public Result<Short> createShort(String userId, String password) {
         Log.info(() -> format("createShort : userId = %s, pwd = %s\n", userId, password));
@@ -58,12 +60,13 @@ public class JavaShorts implements Shorts {
             var blobUrl = format("%s/%s/%s", TukanoRestServer.serverURI, Blobs.NAME, shortId);
             var shrt = new Short(shortId, userId, blobUrl);
 
-            return errorOrValue((Result<Short>) CosmosDBShorts.getInstance().insertOne(shrt),
+
+            return errorOrValue(CosmosDBShorts.getInstance().insertOne(shrt),
                     s -> s.copyWithLikes_And_Token(0));
         });
     }
 
-    @SuppressWarnings("unchecked")
+  
     @Override
     public Result<Short> getShort(String shortId) {
         Log.info(() -> format("getShort : shortId = %s\n", shortId));
@@ -74,7 +77,8 @@ public class JavaShorts implements Shorts {
 
         var query = format("SELECT count(*) FROM Likes l WHERE l.shortId = '%s'", shortId);
         var likes = CosmosDBShorts.getInstance().query(query, Long.class).value();
-        return errorOrValue((Result<Short>) CosmosDBShorts.getInstance().getOne(shortId, Short.class),
+        return errorOrValue(CosmosDBShorts.getInstance().getOne(shortId, Short.class),
+
                 shrt -> shrt.copyWithLikes_And_Token(likes.get(0)));
     }
 
