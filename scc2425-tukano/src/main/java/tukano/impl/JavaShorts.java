@@ -84,18 +84,15 @@ public class JavaShorts implements Shorts {
 
             return errorOrResult(okUser(shrt.getOwnerId(), password), user -> {
 
-                CosmosContainer ct = CosmosDB.getInstance().getContainer();
-
                 // Delete associated likes
                 var query1 = format("SELECT Likes l WHERE l.shortId = '%s'", shortId);
-                var result1 = ct.queryItems(query1, new CosmosQueryRequestOptions(), Likes.class);
+                var result1 = CosmosDB.getInstance().query(query1, Likes.class).value();
 
-                for (Likes like : result1)
-                    ct.deleteItem(like.getOwnerId() + like.getShortId(), new PartitionKey(like.getUserId()),
-                            new CosmosItemRequestOptions());
+                for (Likes l : result1)
+                    CosmosDB.getInstance().deleteOne(l);
 
                 // Delete the short
-                ct.deleteItem(shrt.getShortId(), new PartitionKey(shrt.getOwnerId()), new CosmosItemRequestOptions());
+                CosmosDB.getInstance().deleteOne(shrt);
 
                 // Delete associated blob
                 JavaBlobs.getInstance().delete(shrt.getBlobUrl(), Token.get());
@@ -190,40 +187,6 @@ public class JavaShorts implements Shorts {
         }
     }
 
-    /*
-     * @Override
-     * public Result<Void> deleteAllShorts(String userId, String password, String
-     * token) {
-     * Log.info(() ->
-     * format("deleteAllShorts : userId = %s, password = %s, token = %s\n", userId,
-     * password, token));
-     * 
-     * if (!Token.isValid(token, userId)) {
-     * return error(FORBIDDEN);
-     * }
-     * 
-     * return CosmosDB.getInstance().transaction((hibernate) -> {
-     * 
-     * // delete shorts
-     * var query1 = format("DELETE Short s WHERE s.ownerId = '%s'", userId);
-     * hibernate.createQuery(query1, Short.class).executeUpdate();
-     * 
-     * // delete follows
-     * var query2 =
-     * format("DELETE Following f WHERE f.follower = '%s' OR f.followee = '%s'",
-     * userId, userId);
-     * hibernate.createQuery(query2, Following.class).executeUpdate();
-     * 
-     * // delete likes
-     * var query3 =
-     * format("DELETE Likes l WHERE l.ownerId = '%s' OR l.userId = '%s'", userId,
-     * userId);
-     * hibernate.createQuery(query3, Likes.class).executeUpdate();
-     * 
-     * });
-     * }
-     */
-
     @Override
     public Result<Void> deleteAllShorts(String userId, String password, String token) {
         Log.info(() -> format("deleteAllShorts : userId = %s, password = %s, token = %s\n", userId, password, token));
@@ -232,28 +195,26 @@ public class JavaShorts implements Shorts {
             return error(FORBIDDEN);
         }
 
-        CosmosContainer ct = CosmosDB.getInstance().getContainer();
-
         // delete shorts
         var query1 = format("SELECT Short s WHERE s.ownerId = '%s'", userId);
-        var result1 = ct.queryItems(query1, new CosmosQueryRequestOptions(), Short.class);
+        var result1 = CosmosDB.getInstance().query(query1, Short.class).value();
 
         for (Short s : result1)
-            ct.deleteItem(s.getShortId(), new PartitionKey(userId), new CosmosItemRequestOptions());
+            CosmosDB.getInstance().deleteOne(s);
 
         // delete follows
         var query2 = format("SELECT Following f WHERE f.follower = '%s' OR f.followee = '%s'", userId, userId);
-        var result2 = ct.queryItems(query2, new CosmosQueryRequestOptions(), Following.class);
+        var result2 = CosmosDB.getInstance().query(query2, Following.class).value();
 
         for (Following f : result2)
-            ct.deleteItem(f.getFollower() + f.getFollowee(), new PartitionKey(userId), new CosmosItemRequestOptions());
+            CosmosDB.getInstance().deleteOne(f);
 
         // delete likes
         var query3 = format("SELECT Likes l WHERE l.ownerId = '%s' OR l.userId = '%s'", userId, userId);
-        var result3 = ct.queryItems(query3, new CosmosQueryRequestOptions(), Likes.class);
+        var result3 = CosmosDB.getInstance().query(query3, Likes.class).value();
 
         for (Likes l : result3)
-            ct.deleteItem(l.getOwnerId() + l.getShortId(), new PartitionKey(userId), new CosmosItemRequestOptions());
+            CosmosDB.getInstance().deleteOne(l);
 
         return ok();
 
