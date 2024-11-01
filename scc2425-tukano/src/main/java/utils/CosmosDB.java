@@ -21,10 +21,10 @@ import redis.clients.jedis.Jedis;
 
 public class CosmosDB {
 
-    private static final String CONNECTION_URL = "https://scc232470735.documents.azure.com:443/"; // replace with your
+    private static final String CONNECTION_URL = "https://p1cosmsos.documents.azure.com/"; // replace with your
                                                                                                   // own
-    private static final String DB_KEY = "gHcQf69MEY3KzxCNPZaMOnGF8fWtL9cr0uFrVwZyXZZdYOV7UR5zBecvEjugwDQk1qXAmwOsTr9RACDbv0MnUQ==";
-    private static final String DB_NAME = "scc232470735";
+    private static final String DB_KEY = "20JeiR6MlWk08rG019R7inhAb1NnkT650YuYHQ2AzrTBE93Y1kYbMY105gZIrWusQ8LYejq97rKDACDbl3tO2w==";
+    private static final String DB_NAME = "p1cosmsos";
 
     private static String containerName;
     private static CosmosDB instance;
