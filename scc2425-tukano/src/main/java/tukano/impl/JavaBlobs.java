@@ -9,8 +9,8 @@ import java.util.logging.Logger;
 import tukano.api.Blobs;
 import tukano.api.Result;
 import tukano.impl.rest.TukanoRestServer;
-import tukano.impl.storage.BlobStorage;
-import tukano.impl.storage.FilesystemStorage;
+import tukano.impl.storage.AzureBlobStorage;
+import tukano.impl.storage.AzureFilesystemStorage;
 import utils.Hash;
 import utils.Hex;
 
@@ -20,7 +20,7 @@ public class JavaBlobs implements Blobs {
 	private static Logger Log = Logger.getLogger(JavaBlobs.class.getName());
 
 	public String baseURI;
-	private BlobStorage storage;
+	private AzureBlobStorage storage;
 	
 	synchronized public static Blobs getInstance() {
 		if( instance == null )
@@ -29,7 +29,7 @@ public class JavaBlobs implements Blobs {
 	}
 	
 	private JavaBlobs() {
-		storage = new FilesystemStorage();
+		storage = new AzureFilesystemStorage();
 		baseURI = String.format("%s/%s/", TukanoRestServer.serverURI, Blobs.NAME);
 	}
 	
@@ -40,7 +40,7 @@ public class JavaBlobs implements Blobs {
 		if (!validBlobId(blobId, token))
 			return error(FORBIDDEN);
 
-		return storage.write( toPath( blobId ), bytes);
+		return storage.upload( toPath( blobId ), bytes);
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class JavaBlobs implements Blobs {
 		if( ! validBlobId( blobId, token ) )
 			return error(FORBIDDEN);
 
-		return storage.read( toPath( blobId ) );
+		return storage.download( toPath( blobId ) );
 	}
 
 	@Override
