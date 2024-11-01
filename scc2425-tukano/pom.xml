@@ -5,6 +5,7 @@
     <groupId>scc2425</groupId>
     <artifactId>tukano</artifactId>
     <version>1</version>
+    <packaging>war</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <authors>70231-70735</authors>
@@ -12,10 +13,18 @@
     <build>
         <sourceDirectory>src</sourceDirectory>
         <plugins>
-            <plugin> 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>com.microsoft.azure</groupId>
-                <artifactId>azure-webapp-maven-plugin</artifactId>  
-                <version>2.13.0</version>  
+                <artifactId>azure-webapp-maven-plugin</artifactId>
+                <version>2.13.0</version>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -55,8 +64,10 @@
                 <configuration>
                     <url>http://maven:s3cret@127.0.0.1:8080/manager/text</url>
                     <server>tomcat-docker</server>
+                    <username>maven</username> 
+                    <password>s3cret</password>
                     <update>true</update>
-                    <path>/lab1</path>
+                    <path>/scc1</path>
                 </configuration>
             </plugin>
         </plugins>
@@ -138,5 +149,4 @@
             <version>5.0.1</version>
         </dependency>
     </dependencies>
-    <packaging>war</packaging>
 </project>
