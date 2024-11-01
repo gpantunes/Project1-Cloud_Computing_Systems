@@ -1,6 +1,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>scc2425</groupId>
     <artifactId>tukano</artifactId>
@@ -41,6 +41,17 @@
                             </build>
                         </image>
                     </images>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <url>http://maven:s3cret@127.0.0.1:8080/manager/text</url>
+                    <server>tomcat-docker</server>
+                    <update>true</update>
+                    <path>/lab1</path>
                 </configuration>
             </plugin>
         </plugins>
@@ -122,4 +133,5 @@
             <version>5.0.1</version>
         </dependency>
     </dependencies>
+    <packaging>war</packaging>
 </project>

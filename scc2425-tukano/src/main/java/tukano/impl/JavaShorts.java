@@ -15,11 +15,11 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import com.azure.cosmos.CosmosContainer;
+//import com.azure.cosmos.CosmosContainer;
 //import com.azure.cosmos.CosmosException;
-import com.azure.cosmos.models.CosmosItemRequestOptions;
-import com.azure.cosmos.models.CosmosQueryRequestOptions;
-import com.azure.cosmos.models.PartitionKey;
+//import com.azure.cosmos.models.CosmosItemRequestOptions;
+//import com.azure.cosmos.models.CosmosQueryRequestOptions;
+//import com.azure.cosmos.models.PartitionKey;
 
 import tukano.api.Blobs;
 import tukano.api.Result;
