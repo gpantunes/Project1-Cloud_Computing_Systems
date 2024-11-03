@@ -1,7 +1,11 @@
 package tukano.api;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import tukano.impl.data.Following;
 
 @Entity
 public class User {
@@ -11,6 +15,7 @@ public class User {
 	private String pwd;
 	private String email;	
 	private String displayName;
+	private List<Following> followers;
 
 	public User() {}
 	
@@ -19,6 +24,7 @@ public class User {
 		this.email = email;
 		this.userId = userId;
 		this.displayName = displayName;
+		followers = new ArrayList<>();
 	}
 
 	public String getUserId() {

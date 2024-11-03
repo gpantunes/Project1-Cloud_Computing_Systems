@@ -6,7 +6,6 @@ C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\
 C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\java\tukano\impl\data\Following.java
 C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\java\tukano\impl\JavaBlobs.java
 C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\java\utils\JSON.java
-C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\java\utils\CosmosDBUsers.java
 C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\test\test\Test.java
 C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\java\tukano\api\Shorts.java
 C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\java\tukano\impl\rest\TukanoRestServer.java
@@ -38,7 +37,7 @@ C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\
 C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\java\tukano\api\Users.java
 C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\java\utils\Props.java
 C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\java\tukano\impl\Token.java
-C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\java\utils\CosmosDBShorts.java
+C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\java\utils\CosmosDB.java
 C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\java\tukano\impl\storage\BlobStorage.java
 C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\java\tukano\impl\storage\FilesystemStorage.java
 C:\Users\guipm\Projetos Uni\4º Ano\SCC_projects\Projeto1-SCC\scc2425-tukano\src\main\java\tukano\impl\rest\utils\CustomLoggingFilter.java
