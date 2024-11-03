@@ -2,6 +2,7 @@ package utils;
 
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 import com.azure.cosmos.ConsistencyLevel;
 import com.azure.cosmos.CosmosClient;
@@ -21,10 +22,13 @@ import redis.clients.jedis.Jedis;
 
 public class CosmosDB {
 
-    private static final String CONNECTION_URL = "https://scc232470735.documents.azure.com:443/"; // replace with your
+    private static final String CONNECTION_URL = "https://p1cosmsos.documents.azure.com/"; // replace with your
                                                                                                   // own
-    private static final String DB_KEY = "gHcQf69MEY3KzxCNPZaMOnGF8fWtL9cr0uFrVwZyXZZdYOV7UR5zBecvEjugwDQk1qXAmwOsTr9RACDbv0MnUQ==";
-    private static final String DB_NAME = "scc232470735";
+    private static final String DB_KEY = "20JeiR6MlWk08rG019R7inhAb1NnkT650YuYHQ2AzrTBE93Y1kYbMY105gZIrWusQ8LYejq97rKDACDbl3tO2w==";
+    private static final String DB_NAME = "p1cosmsos";
+
+    private static Logger Log = Logger.getLogger(CosmosDB.class.getName());
+
 
     private static String containerName;
     private static CosmosDB instance;
@@ -133,8 +137,12 @@ public class CosmosDB {
             jedis.set(String.valueOf(obj.hashCode()).getBytes(), serialize(obj));
         } catch (Exception e) {
             e.printStackTrace();
+            Log.info("###################### exceção no insert do redis");
             return Result.error(ErrorCode.INTERNAL_ERROR);
         }
+
+        Log.info("#################### vai tentar meter no container " + container);
+
         return tryCatch(() -> container.createItem(obj).getItem());
     }
 
@@ -217,12 +225,15 @@ public class CosmosDB {
     <T> Result<T> tryCatch(Supplier<T> supplierFunc) {
         try {
             init();
+            Log.info("############## depois do init " + container);
             return Result.ok(supplierFunc.get());
         } catch (CosmosException ce) {
             // ce.printStackTrace();
+            Log.info("################### catch 1");
             return Result.error(errorCodeFromStatus(ce.getStatusCode()));
         } catch (Exception x) {
             x.printStackTrace();
+            Log.info("#################### catch 2");
             return Result.error(ErrorCode.INTERNAL_ERROR);
         }
     }
