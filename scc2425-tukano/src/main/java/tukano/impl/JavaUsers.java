@@ -41,8 +41,8 @@ public class JavaUsers implements Users {
 			return error(BAD_REQUEST);
 
 		Log.info("######################### cona");
-
 		return errorOrValue(CosmosDB.getInstance().insertOne(user), user.getUserId());
+
 	}
 
 	@Override
@@ -83,7 +83,6 @@ public class JavaUsers implements Users {
 			}).start();
 
 			return (Result<User>) CosmosDB.getInstance().deleteOne(user);
-
 		});
 	}
 
@@ -93,6 +92,7 @@ public class JavaUsers implements Users {
 
 		var query = format("SELECT * FROM User u WHERE UPPER(u.userId) LIKE '%%%s%%'", pattern.toUpperCase());
 		var hits = (CosmosDB.getInstance().query(query, User.class)).value()
+
 				.stream()
 				.map(User::copyWithoutPassword)
 				.toList();
