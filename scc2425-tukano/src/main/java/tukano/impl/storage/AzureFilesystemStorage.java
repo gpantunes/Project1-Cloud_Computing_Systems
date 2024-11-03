@@ -23,7 +23,7 @@ public class AzureFilesystemStorage implements AzureBlobStorage {
     public Result<Void> upload(String filename, byte[] bytes) {
 
         // Get connection string in the storage access keys page
-        String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=p1scc;AccountKey=LMty9A7CeOGU5jzcMX2cIG02L1Elwn1sOCNIHYtki+IONTNxDRW9tg8MGP0kYCW7s0bb/UbP7HZB+ASt9b5DAw==;EndpointSuffix=core.windows.net";
+        String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=p1sccn;AccountKey=1QWd/3lqlYCq0VQKbK9e7c2TtN46jUQSzeBF0uIyJ3nXNy+ETt/g4yuIAdleODQDHR61wGom4OQ/+AStuJFp2Q==;EndpointSuffix=core.windows.net";
 
         try {
             BinaryData data = BinaryData.fromFile(Path.of(filename));
@@ -53,7 +53,7 @@ public class AzureFilesystemStorage implements AzureBlobStorage {
     public Result<Void> delete(String filename) {
 
         // Get connection string in the storage access keys page
-        String storageConnectionString = "use your own from the portal...";
+        String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=p1sccn;AccountKey=1QWd/3lqlYCq0VQKbK9e7c2TtN46jUQSzeBF0uIyJ3nXNy+ETt/g4yuIAdleODQDHR61wGom4OQ/+AStuJFp2Q==;EndpointSuffix=core.windows.net";
 
         try {
 
@@ -82,7 +82,7 @@ public class AzureFilesystemStorage implements AzureBlobStorage {
     public Result<byte[]> download(String filename) {
 
         // Get connection string in the storage access keys page
-        String storageConnectionString = "use your own from the portal...";
+        String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=p1sccn;AccountKey=1QWd/3lqlYCq0VQKbK9e7c2TtN46jUQSzeBF0uIyJ3nXNy+ETt/g4yuIAdleODQDHR61wGom4OQ/+AStuJFp2Q==;EndpointSuffix=core.windows.net";
 
         byte[] arr = null;
 
@@ -112,7 +112,7 @@ public class AzureFilesystemStorage implements AzureBlobStorage {
     @Override
     public Result<Void> download(String filename, Consumer<byte[]> sink) {
         // Connection string from the Azure portal
-        String storageConnectionString = "your-connection-string-here";
+        String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=p1sccn;AccountKey=1QWd/3lqlYCq0VQKbK9e7c2TtN46jUQSzeBF0uIyJ3nXNy+ETt/g4yuIAdleODQDHR61wGom4OQ/+AStuJFp2Q==;EndpointSuffix=core.windows.net";
 
         // Define the byte range (start and length) you want to download
         long startRange = 0;   // Starting byte position

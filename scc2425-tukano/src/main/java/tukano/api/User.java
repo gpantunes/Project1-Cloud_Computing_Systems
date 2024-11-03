@@ -3,6 +3,8 @@ package tukano.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import tukano.impl.data.Following;
@@ -11,11 +13,12 @@ import tukano.impl.data.Following;
 public class User {
 	
 	@Id
+	@JsonProperty("id")
 	private String userId;
 	private String pwd;
 	private String email;	
 	private String displayName;
-	private List<Following> followers;
+	//private List<Following> followers;
 
 	public User() {}
 	
@@ -24,7 +27,7 @@ public class User {
 		this.email = email;
 		this.userId = userId;
 		this.displayName = displayName;
-		followers = new ArrayList<>();
+		//followers = new ArrayList<>();
 	}
 
 	public String getUserId() {
