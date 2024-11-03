@@ -40,6 +40,8 @@ public class JavaUsers implements Users {
 		if (badUserInfo(user))
 			return error(BAD_REQUEST);
 
+		Log.info("######################### cona");
+
 		return errorOrValue(CosmosDB.getInstance().insertOne(user), user.getUserId());
 	}
 
