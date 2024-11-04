@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 import tukano.api.Result;
 import tukano.api.User;
 import tukano.api.Users;
-import utils.CosmosDB;
+import utils.CosmosDBUsers;
 
 public class JavaUsers implements Users {
 
@@ -40,9 +40,8 @@ public class JavaUsers implements Users {
 		if (badUserInfo(user))
 			return error(BAD_REQUEST);
 
-		Log.info("######################### cona");
-		return errorOrValue(CosmosDB.getInstance().insertOne(user), user.getUserId());
-
+		Log.info("Alfredo");
+		return errorOrValue(CosmosDBUsers.getInstance().insertOne(user), user.getUserId());
 	}
 
 	@Override
@@ -52,7 +51,7 @@ public class JavaUsers implements Users {
 		if (userId == null)
 			return error(BAD_REQUEST);
 
-		return validatedUserOrError(CosmosDB.getInstance().getOne(userId, User.class), pwd);
+		return validatedUserOrError(CosmosDBUsers.getInstance().getOne(userId, User.class), pwd);
 	}
 
 	@Override
@@ -62,8 +61,8 @@ public class JavaUsers implements Users {
 		if (badUpdateUserInfo(userId, pwd, other))
 			return error(BAD_REQUEST);
 
-		return errorOrResult(validatedUserOrError(CosmosDB.getInstance().getOne(userId, User.class), pwd),
-				user -> CosmosDB.getInstance().updateOne(user.updateFrom(other)));
+		return errorOrResult(validatedUserOrError(CosmosDBUsers.getInstance().getOne(userId, User.class), pwd),
+				user -> CosmosDBUsers.getInstance().updateOne(user.updateFrom(other)));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -74,7 +73,7 @@ public class JavaUsers implements Users {
 		if (userId == null || pwd == null)
 			return error(BAD_REQUEST);
 
-		return errorOrResult(validatedUserOrError(CosmosDB.getInstance().getOne(userId, User.class), pwd), user -> {
+		return errorOrResult(validatedUserOrError(CosmosDBUsers.getInstance().getOne(userId, User.class), pwd), user -> {
 
 			// Delete user shorts and related info asynchronously in a separate thread
 			Executors.defaultThreadFactory().newThread(() -> {
@@ -82,7 +81,8 @@ public class JavaUsers implements Users {
 				JavaBlobs.getInstance().deleteAllBlobs(userId, Token.get(userId));
 			}).start();
 
-			return (Result<User>) CosmosDB.getInstance().deleteOne(user);
+			return (Result<User>) CosmosDBUsers.getInstance().deleteOne(user);
+
 		});
 	}
 
@@ -90,9 +90,8 @@ public class JavaUsers implements Users {
 	public Result<List<User>> searchUsers(String pattern) {
 		Log.info(() -> format("searchUsers : patterns = %s\n", pattern));
 
-		var query = format("SELECT * FROM User u WHERE UPPER(u.userId) LIKE '%%%s%%'", pattern.toUpperCase());
-		var hits = (CosmosDB.getInstance().query(query, User.class)).value()
-
+		var query = format("SELECT * FROM users u WHERE UPPER(u.id) LIKE '%%%s%%'", pattern.toUpperCase());
+		var hits = (CosmosDBUsers.getInstance().query(query, User.class)).value()
 				.stream()
 				.map(User::copyWithoutPassword)
 				.toList();

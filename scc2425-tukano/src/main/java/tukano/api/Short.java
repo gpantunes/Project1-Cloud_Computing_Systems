@@ -2,6 +2,9 @@ package tukano.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -21,7 +24,10 @@ import tukano.impl.data.Likes;
 @Entity
 public class Short {
 
+	private static Logger Log = Logger.getLogger(Short.class.getName());
+
 	@Id
+	@JsonProperty("id")
 	String shortId;
 	String ownerId;
 	String blobUrl;
@@ -93,7 +99,9 @@ public class Short {
 	}
 
 	public Short copyWithLikes_And_Token(long totLikes) {
+		Log.warning("Será aqui");
 		var urlWithToken = String.format("%s?token=%s", blobUrl, Token.get(blobUrl));
+		Log.warning("Ou a criar o short");
 		return new Short(shortId, ownerId, urlWithToken, timestamp, (int) totLikes);
 	}
 }

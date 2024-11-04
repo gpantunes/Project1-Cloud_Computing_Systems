@@ -2,33 +2,42 @@ package tukano.impl.data;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
 @Entity
 public class Likes {
-	
-	@Id 
+
+	@Id
+	@JsonProperty("id")
+	private String id;
+
+	@JsonProperty("userId")
 	String userId;
-	
-	@Id 
+
+	@JsonProperty("shortId")
 	String shortId;
-	
+
+	@JsonProperty("ownerId")
+	String ownerId;
+
+	public Likes() {
+	}
+
+	public Likes(String userId, String shortId, String ownerId) {
+		this.id = userId + "_" + shortId;
+		this.userId = userId;
+		this.shortId = shortId;
+		this.ownerId = ownerId;
+	}
+
 	public String getOwnerId() {
 		return ownerId;
 	}
 
 	public void setOwnerId(String ownerId) {
-		this.ownerId = ownerId;
-	}
-
-	String ownerId;
-	
-	public Likes() {}
-
-	public Likes(String userId, String shortId, String ownerId) {
-		this.userId = userId;
-		this.shortId = shortId;
 		this.ownerId = ownerId;
 	}
 
@@ -70,6 +79,5 @@ public class Likes {
 		return Objects.equals(ownerId, other.ownerId) && Objects.equals(shortId, other.shortId)
 				&& Objects.equals(userId, other.userId);
 	}
-	
-	
+
 }
