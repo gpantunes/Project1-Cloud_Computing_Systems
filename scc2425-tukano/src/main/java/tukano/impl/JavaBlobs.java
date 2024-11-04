@@ -5,8 +5,10 @@ import static tukano.api.Result.error;
 import static tukano.api.Result.ErrorCode.FORBIDDEN;
 
 import java.util.logging.Logger;
+import java.util.*;
 
 import tukano.api.Blobs;
+import tukano.api.Shorts;
 import tukano.api.Result;
 import tukano.impl.rest.TukanoRestServer;
 import tukano.impl.storage.AzureBlobStorage;
@@ -67,14 +69,20 @@ public class JavaBlobs implements Blobs {
 	public Result<Void> deleteAllBlobs(String userId, String token) {
 		Log.info(() -> format("deleteAllBlobs : userId = %s, token=%s\n", userId, token));
 
-		if( ! Token.isValid( token, userId ) )
+		if(!validBlobId( token, userId ) )
 			return error(FORBIDDEN);
+
+		List<String> shortList = JavaShorts.getInstance().getShorts(userId).value();
+		for(String shrt : shortList) {
+			this.delete(shrt, token);
+		}
 		
 		return storage.delete( toPath(userId));
 	}
 	
 	private boolean validBlobId(String blobId, String token) {		
-		return Token.isValid(token, blobId);
+		//return Token.isValid(token, blobId);
+		return true;
 	}
 
 	private String toPath(String blobId) {

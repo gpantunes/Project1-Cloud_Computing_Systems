@@ -25,14 +25,12 @@ import redis.clients.jedis.Jedis;
 
 public class CosmosDBUsers {
 
-    private static final String CONNECTION_URL = "https://p1cosmos.documents.azure.com:443/"; // replace with your
+    private static final String CONNECTION_URL = "https://p1cosmsos.documents.azure.com:443/"; // replace with your
                                                                                               // own
-    private static final String DB_KEY = "wC4GOD5tMZ5f4Xy0lQ7EC2Kd8an916nnHNDbcSCtu47e7JQ0HSjiiQfReZN4ekD6QYGFvStF9DOsACDbEH5N3g==";
-    private static final String DB_NAME = "scc2425";
+    private static final String DB_KEY = "20JeiR6MlWk08rG019R7inhAb1NnkT650YuYHQ2AzrTBE93Y1kYbMY105gZIrWusQ8LYejq97rKDACDbl3tO2w==";
+    private static final String DB_NAME = "p1scc";
 
     private static Logger Log = Logger.getLogger(JavaUsers.class.getName());
-
-    // private static String containerName;
 
     private static final String CONTAINERNAME = "users";
 
@@ -59,13 +57,6 @@ public class CosmosDBUsers {
 
         String callOrgininClass = Thread.currentThread().getStackTrace()[2].getClassName();
 
-        /*
-         * if (callOrgininClass.toLowerCase().contains("user")) {
-         * containerName = "users";
-         * 
-         * } else
-         * containerName = "shorts";
-         */
         instance = new CosmosDBUsers(client);
 
         return instance;
@@ -98,31 +89,36 @@ public class CosmosDBUsers {
     }
 
     public <T> Result<T> getOne(String id, Class<T> clazz) {
-        /*
-         * try (Jedis jedis = RedisCache.getCachePool().getResource()) {
-         * String dataOnCache = jedis.get(id);
-         * 
-         * T item = null;
-         * 
-         * if (dataOnCache != null) {
-         * item = new ObjectMapper().readValue(dataOnCache, clazz);
-         * } else {
-         * item = container.readItem(id, new PartitionKey(id), clazz).getItem();
-         * jedis.set(id, new ObjectMapper().writeValueAsString(item));
-         * }
-         * 
-         * return Result.ok(item);
-         * 
-         * } catch (CosmosException e) {
-         * return Result.error(errorCodeFromStatus(e.getStatusCode()));
-         * } catch (Exception e) {
-         * e.printStackTrace();
-         * return Result.error(ErrorCode.INTERNAL_ERROR);
-         * }
-         */
+        init();
 
-        // T item = container.readItem(id, new PartitionKey(id), clazz).getItem();
-        return tryCatch(() -> container.readItem(id, new PartitionKey(id), clazz).getItem());
+        try (Jedis jedis = RedisCache.getCachePool().getResource()) {
+            String dataOnCache = jedis.get(id);
+
+            Log.info("################ tentou sacar do jedis " + dataOnCache);
+
+            T item = null;
+
+            if (dataOnCache != null) {
+                Log.info("%%%%%%%%%%%%%%%%%%% data on cache nao é null");
+                item = new ObjectMapper().readValue(dataOnCache, clazz);
+            } else {
+                item = container.readItem(id, new PartitionKey(id), clazz).getItem();
+                Log.info("%%%%%%%%%%%%%%%%%%% foi buscar ao cosmos " + item);
+                jedis.set(id, new ObjectMapper().writeValueAsString(item));
+                Log.info("&&&&&&&&&&&&&&&&&& meteu no jedis");
+            }
+
+            return Result.ok(item);
+
+            } catch (CosmosException e) {
+                return Result.error(errorCodeFromStatus(e.getStatusCode()));
+            } catch (Exception e) {
+                e.printStackTrace();
+                return Result.error(ErrorCode.INTERNAL_ERROR);
+            }
+
+        //T item = container.readItem(id, new PartitionKey(id), clazz).getItem();
+        //return tryCatch(() -> container.readItem(id, new PartitionKey(id), clazz).getItem());
     }
 
     public <T> Result<?> deleteOne(T obj) {
@@ -146,14 +142,12 @@ public class CosmosDBUsers {
     }
 
     public <T> Result<T> insertOne(T obj) {
-        /*
-         * try (Jedis jedis = RedisCache.getCachePool().getResource()) {
-         * jedis.set(String.valueOf(obj.hashCode()).getBytes(), serialize(obj));
-         * } catch (Exception e) {
-         * e.printStackTrace();
-         * return Result.error(ErrorCode.INTERNAL_ERROR);
-         * }
-         */
+        try (Jedis jedis = RedisCache.getCachePool().getResource()) {
+          jedis.set(String.valueOf(obj.hashCode()).getBytes(), serialize(obj));
+        } catch (Exception e) {
+          e.printStackTrace();
+          return Result.error(ErrorCode.INTERNAL_ERROR);
+        }
 
         Log.info("Nome do container " + CONTAINERNAME);
         init();
@@ -161,6 +155,8 @@ public class CosmosDBUsers {
     }
 
     public <T> Result<List<T>> query(String queryStr, Class<T> clazz) {
+        init();
+
         try (Jedis jedis = RedisCache.getCachePool().getResource()) {
             byte[] dataOnCache = jedis.get(String.valueOf(queryStr.hashCode()).getBytes());
 
@@ -188,6 +184,8 @@ public class CosmosDBUsers {
     }
 
     public <T> Result<List<T>> query(Class<T> clazz, String fmt, Object... args) {
+        init();
+
         try (Jedis jedis = RedisCache.getCachePool().getResource()) {
             byte[] dataOnCache = jedis.get(String.valueOf(String.format(fmt, args).hashCode()).getBytes());
 

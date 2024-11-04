@@ -3,9 +3,13 @@ package tukano.impl.storage;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 import com.azure.core.util.BinaryData;
 import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobClientBuilder;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
 import com.azure.storage.blob.specialized.BlobInputStream;
@@ -17,30 +21,26 @@ import static tukano.api.Result.ok;
 
 public class AzureFilesystemStorage implements AzureBlobStorage {
 
+    private static Logger Log = Logger.getLogger(AzureFilesystemStorage.class.getName());
     private static final String BLOBS_CONTAINER_NAME = "shorts";
+    private static final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=p1sccn;AccountKey=1QWd/3lqlYCq0VQKbK9e7c2TtN46jUQSzeBF0uIyJ3nXNy+ETt/g4yuIAdleODQDHR61wGom4OQ/+AStuJFp2Q==;EndpointSuffix=core.windows.net";
+
 
     @Override
     public Result<Void> upload(String filename, byte[] bytes) {
 
-        // Get connection string in the storage access keys page
-        String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=p1sccn;AccountKey=1QWd/3lqlYCq0VQKbK9e7c2TtN46jUQSzeBF0uIyJ3nXNy+ETt/g4yuIAdleODQDHR61wGom4OQ/+AStuJFp2Q==;EndpointSuffix=core.windows.net";
-
         try {
-            BinaryData data = BinaryData.fromFile(Path.of(filename));
-
             // Get container client
             BlobContainerClient containerClient = new BlobContainerClientBuilder()
                     .connectionString(storageConnectionString)
                     .containerName(BLOBS_CONTAINER_NAME)
                     .buildClient();
 
-            // Get client to blob
-            BlobClient blob = containerClient.getBlobClient(filename);
-
-            // Upload contents from BinaryData (check documentation for other alternatives)
+            var blob = containerClient.getBlobClient(filename);
+            var data = BinaryData.fromBytes(bytes);
             blob.upload(data);
 
-            System.out.println("File uploaded : " + filename);
+            Log.info("################## blobclient " + blob + " " + bytes.length);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -51,10 +51,6 @@ public class AzureFilesystemStorage implements AzureBlobStorage {
 
     @Override
     public Result<Void> delete(String filename) {
-
-        // Get connection string in the storage access keys page
-        String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=p1sccn;AccountKey=1QWd/3lqlYCq0VQKbK9e7c2TtN46jUQSzeBF0uIyJ3nXNy+ETt/g4yuIAdleODQDHR61wGom4OQ/+AStuJFp2Q==;EndpointSuffix=core.windows.net";
-
         try {
 
             // Get container client
@@ -80,10 +76,6 @@ public class AzureFilesystemStorage implements AzureBlobStorage {
 
     @Override
     public Result<byte[]> download(String filename) {
-
-        // Get connection string in the storage access keys page
-        String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=p1sccn;AccountKey=1QWd/3lqlYCq0VQKbK9e7c2TtN46jUQSzeBF0uIyJ3nXNy+ETt/g4yuIAdleODQDHR61wGom4OQ/+AStuJFp2Q==;EndpointSuffix=core.windows.net";
-
         byte[] arr = null;
 
         try {
@@ -111,9 +103,6 @@ public class AzureFilesystemStorage implements AzureBlobStorage {
 
     @Override
     public Result<Void> download(String filename, Consumer<byte[]> sink) {
-        // Connection string from the Azure portal
-        String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=p1sccn;AccountKey=1QWd/3lqlYCq0VQKbK9e7c2TtN46jUQSzeBF0uIyJ3nXNy+ETt/g4yuIAdleODQDHR61wGom4OQ/+AStuJFp2Q==;EndpointSuffix=core.windows.net";
-
         // Define the byte range (start and length) you want to download
         long startRange = 0;   // Starting byte position
         int length = 1024;     // Number of bytes to read

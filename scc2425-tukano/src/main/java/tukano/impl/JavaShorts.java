@@ -95,10 +95,9 @@ public class JavaShorts implements Shorts {
                 CosmosDBShorts.getInstance().deleteOne(shrt);
 
                 // Delete associated blob
-                JavaBlobs.getInstance().delete(shrt.getBlobUrl(), Token.get());
+                JavaBlobs.getInstance().delete(shrt.getShortId(), Token.get());
 
                 return ok();
-
             });
         });
     }
@@ -200,7 +199,7 @@ public class JavaShorts implements Shorts {
         var result1 = CosmosDBShorts.getInstance().query(query1, Short.class).value();
 
         for (Short s : result1)
-            CosmosDBShorts.getInstance().deleteOne(s);
+            deleteShort(s.getShortId(), password);
 
         // delete follows
         var query2 = format("SELECT Following f WHERE f.follower = '%s' OR f.followee = '%s'", userId, userId);
@@ -208,13 +207,6 @@ public class JavaShorts implements Shorts {
 
         for (Following f : result2)
             CosmosDBShorts.getInstance().deleteOne(f);
-
-        // delete likes
-        var query3 = format("SELECT Likes l WHERE l.ownerId = '%s' OR l.userId = '%s'", userId, userId);
-        var result3 = CosmosDBShorts.getInstance().query(query3, Likes.class).value();
-
-        for (Likes l : result3)
-            CosmosDBShorts.getInstance().deleteOne(l);
 
         return ok();
 
