@@ -1,7 +1,5 @@
 package tukano.api;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Logger;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import tukano.impl.Token;
-import tukano.impl.data.Likes;
 
 /**
  * Represents a Short video uploaded by an user.
@@ -33,7 +30,6 @@ public class Short {
 	String blobUrl;
 	long timestamp;
 	int totalLikes;
-	List<Likes> likes;
 
 	public Short() {
 	}
@@ -45,7 +41,6 @@ public class Short {
 		this.blobUrl = blobUrl;
 		this.timestamp = timestamp;
 		this.totalLikes = totalLikes;
-		likes = new ArrayList<>();
 	}
 
 	public Short(String shortId, String ownerId, String blobUrl) {
