@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import org.hsqldb.persist.Log;
+
 import com.azure.cosmos.CosmosException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -62,7 +64,11 @@ public class JavaShorts implements Shorts {
         return errorOrResult(okUser(userId, password), user -> {
 
             var shortId = format("%s+%s", userId, UUID.randomUUID());
-            var blobUrl = format("%s/%s/%s", TukanoRestServer.serverURI, Blobs.NAME, shortId);
+            var blobUrl = format("%s/%s/%s", "https://scc-backend-70735.azurewebsites.net/rest", Blobs.NAME,
+                    shortId);
+            // var blobUrl = format("%s/%s/%s", TukanoRestServer.serverURI, Blobs.NAME,
+            // shortId);
+
             var shrt = new Short(shortId, userId, blobUrl);
 
             try (Jedis jedis = RedisCache.getCachePool().getResource()) {
@@ -143,12 +149,6 @@ public class JavaShorts implements Shorts {
     public Result<Void> deleteShort(String shortId, String password) {
         Log.info(() -> format("deleteShort : shortId = %s, pwd = %s\n", shortId, password));
 
-        try (Jedis jedis = RedisCache.getCachePool().getResource()) {
-            jedis.del(shortId);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.error(ErrorCode.INTERNAL_ERROR);
-        }
 
         return errorOrResult(getShort(shortId), shrt -> {
 
@@ -163,6 +163,13 @@ public class JavaShorts implements Shorts {
 
                 // Delete the short
                 CosmosDB.getInstance("shorts").deleteOne(shrt);
+
+                try (Jedis jedis = RedisCache.getCachePool().getResource()) {
+                    jedis.del(shortId);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return Result.error(ErrorCode.INTERNAL_ERROR);
+                }
 
                 // Delete associated blob
                 JavaBlobs.getInstance().delete(shrt.getBlobUrl(), Token.get());
@@ -227,10 +234,13 @@ public class JavaShorts implements Shorts {
                 Log.warning("Entra no erro da cache");
                 return Result.error(ErrorCode.INTERNAL_ERROR);
             }
-
-            return errorOrVoid(okUser(userId2),
-                    isFollowing ? CosmosDB.getInstance("followers").insertOne(f)
-                            : CosmosDB.getInstance("followers").deleteOne(f));
+       
+            Result<Void> u = okUser(userId2);
+            if (u.isOK())
+                return errorOrVoid(u, isFollowing ? CosmosDB.getInstance("followers").insertOne(f)
+                        : CosmosDB.getInstance("followers").deleteOne(f));
+            else
+                return u;
         });
     }
 
@@ -283,9 +293,12 @@ public class JavaShorts implements Shorts {
                 return Result.error(ErrorCode.INTERNAL_ERROR);
             }
 
-            return errorOrVoid(okUser(userId, password),
-                    isLiked ? CosmosDB.getInstance("likes").insertOne(l)
-                            : CosmosDB.getInstance("likes").deleteOne(l));
+            Result<User> u = okUser(userId, password);
+            if (u.isOK())
+                return errorOrVoid(u, isLiked ? CosmosDB.getInstance("likes").insertOne(l)
+                        : CosmosDB.getInstance("likes").deleteOne(l));
+            else
+                return errorOrVoid(u, u);
         });
     }
 

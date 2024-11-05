@@ -94,9 +94,9 @@ public class Short {
 	}
 
 	public Short copyWithLikes_And_Token(long totLikes) {
-		Log.warning("Será aqui");
-		var urlWithToken = String.format("%s?token=%s", blobUrl, Token.get(blobUrl));
-		Log.warning("Ou a criar o short");
-		return new Short(shortId, ownerId, urlWithToken, timestamp, (int) totLikes);
-	}
+        var urlWithToken = String.format("%s?token=%s", blobUrl, Token.get(shortId));
+        Log.warning("Ou a criar o short " + urlWithToken);
+        return new Short(shortId, ownerId, urlWithToken, timestamp, (int) totLikes);
+    }
+
 }

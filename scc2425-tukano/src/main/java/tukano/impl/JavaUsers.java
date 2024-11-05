@@ -124,16 +124,16 @@ public class JavaUsers implements Users {
 		if (userId == null || pwd == null)
 			return error(BAD_REQUEST);
 
-		try (Jedis jedis = RedisCache.getCachePool().getResource()) {
-			jedis.del(userId);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Result.error(ErrorCode.INTERNAL_ERROR);
-		}
-
 		return errorOrResult(validatedUserOrError(CosmosDBUsers.getOne(userId, User.class), pwd),
 				user -> {
 
+					try (Jedis jedis = RedisCache.getCachePool().getResource()) {
+						jedis.del(userId);
+					} catch (Exception e) {
+						e.printStackTrace();
+						return Result.error(ErrorCode.INTERNAL_ERROR);
+					}
+					
 					// Delete user shorts and related info asynchronously in a separate thread
 					Executors.defaultThreadFactory().newThread(() -> {
 						JavaShorts.getInstance().deleteAllShorts(userId, pwd, Token.get(userId));

@@ -2,18 +2,19 @@
 <hibernate-configuration>
 	<session-factory>
 		<!-- JDBC Database connection settings -->
-		<property name="connection.driver_class">org.hsqldb.jdbcDriver</property>
-		<property name="connection.url">jdbc:hsqldb:mem:tukano</property>
-		<property name="connection.username">sa</property>
-		<property name="connection.password"></property>
+		<property name="connection.driver_class">org.postgresql.Driver</property>
+		<property name="connection.url">jdbc:postgresql://c-p1scc.srieyx3jpyhtor.postgres.cosmos.azure.com:5432/citus</property>
+		<property name="connection.username">p1scc</property>
+		<property name="connection.password">S3cret1234</property>
 		<!-- JDBC connection pool settings ... using built-in test pool -->
 		<property name="connection.pool_size">64</property>
 		<!-- Echo the SQL to stdout -->
 		<property name="show_sql">false</property>
+		<property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
 		<!-- Set the current session context -->
 		<property name="current_session_context_class">thread</property>
 		<!-- Drop and re-create the database schema on startup -->
-		<property name="hbm2ddl.auto">create-drop</property>
+		<property name="hbm2ddl.auto">úpdate</property>
 		<!-- dbcp connection pool configuration -->
 		<property name="hibernate.dbcp.initialSize">5</property>
 		<property name="hibernate.dbcp.maxTotal">20</property>
