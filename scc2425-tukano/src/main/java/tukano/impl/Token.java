@@ -24,8 +24,9 @@ public class Token {
 	public static String get(String id) {
 		var timestamp = System.currentTimeMillis();
 		Log.warning("ID: " + id + " Time: " + timestamp + "Secret: " + secret);
-		secret = "abc";
+		//secret = "123";
 		var signature = Hash.of(id, timestamp, secret);
+		Log.warning("############# sig " + signature);
 		return String.format("%s%s%s", timestamp, DELIMITER, signature);
 	}
 
@@ -33,8 +34,11 @@ public class Token {
 		try {
 			var bits = tokenStr.split(DELIMITER);
 			var timestamp = Long.valueOf(bits[0]);
-			secret = "abc";
 			var hmac = Hash.of(id, timestamp, secret);
+
+			Log.warning("########### timestamp, hmac no is valid " + timestamp + " " + hmac +
+					" bits[1] " + bits[1] + " id " + id + " secret " + secret);
+
 			var elapsed = Math.abs(System.currentTimeMillis() - timestamp);			
 			Log.info(String.format("hash ok:%s, elapsed %s ok: %s\n", hmac.equals(bits[1]), elapsed, elapsed < MAX_TOKEN_AGE));
 			return hmac.equals(bits[1]) && elapsed < MAX_TOKEN_AGE;			

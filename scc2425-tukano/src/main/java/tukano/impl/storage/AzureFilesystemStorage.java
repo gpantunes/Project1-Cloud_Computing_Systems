@@ -13,7 +13,6 @@ import com.azure.storage.blob.BlobClientBuilder;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
 import com.azure.storage.blob.specialized.BlobInputStream;
-
 import tukano.api.Result;
 import static tukano.api.Result.ErrorCode.INTERNAL_ERROR;
 import static tukano.api.Result.error;
@@ -24,6 +23,7 @@ public class AzureFilesystemStorage implements AzureBlobStorage {
     private static Logger Log = Logger.getLogger(AzureFilesystemStorage.class.getName());
     private static final String BLOBS_CONTAINER_NAME = "shorts";
     private static final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=p1sccn;AccountKey=1QWd/3lqlYCq0VQKbK9e7c2TtN46jUQSzeBF0uIyJ3nXNy+ETt/g4yuIAdleODQDHR61wGom4OQ/+AStuJFp2Q==;EndpointSuffix=core.windows.net";
+
 
     @Override
     public Result<Void> upload(String filename, byte[] bytes) {
@@ -103,8 +103,8 @@ public class AzureFilesystemStorage implements AzureBlobStorage {
     @Override
     public Result<Void> download(String filename, Consumer<byte[]> sink) {
         // Define the byte range (start and length) you want to download
-        long startRange = 0; // Starting byte position
-        int length = 1024; // Number of bytes to read
+        long startRange = 0;   // Starting byte position
+        int length = 1024;     // Number of bytes to read
 
         try {
             // Get container client
