@@ -124,8 +124,6 @@ public class JavaUsers implements Users {
 		if (userId == null || pwd == null)
 			return error(BAD_REQUEST);
 
-		
-
 		return errorOrResult(validatedUserOrError(CosmosDBUsers.getOne(userId, User.class), pwd),
 				user -> {
 

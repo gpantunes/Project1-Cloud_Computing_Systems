@@ -68,6 +68,7 @@ public class JavaShorts implements Shorts {
                     shortId);
             // var blobUrl = format("%s/%s/%s", TukanoRestServer.serverURI, Blobs.NAME,
             // shortId);
+
             var shrt = new Short(shortId, userId, blobUrl);
 
             try (Jedis jedis = RedisCache.getCachePool().getResource()) {
@@ -147,6 +148,7 @@ public class JavaShorts implements Shorts {
     @Override
     public Result<Void> deleteShort(String shortId, String password) {
         Log.info(() -> format("deleteShort : shortId = %s, pwd = %s\n", shortId, password));
+
 
         return errorOrResult(getShort(shortId), shrt -> {
 
@@ -232,7 +234,7 @@ public class JavaShorts implements Shorts {
                 Log.warning("Entra no erro da cache");
                 return Result.error(ErrorCode.INTERNAL_ERROR);
             }
-
+       
             Result<Void> u = okUser(userId2);
             if (u.isOK())
                 return errorOrVoid(u, isFollowing ? CosmosDB.getInstance("followers").insertOne(f)

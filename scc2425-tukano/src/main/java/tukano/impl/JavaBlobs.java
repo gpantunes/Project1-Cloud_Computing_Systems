@@ -80,13 +80,15 @@ public class JavaBlobs implements Blobs {
 		return storage.delete( toPath(userId));
 	}
 	
+
 	private boolean validBlobId(String blobId, String token) {
 		Log.info("############ token no valid " + token);
 		return Token.isValid(token, blobId);
-		//return true;
 	}
 
 	private String toPath(String blobId) {
 		return blobId.replace("+", "/");
 	}
+  
 }
+

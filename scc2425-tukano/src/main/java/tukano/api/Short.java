@@ -98,4 +98,5 @@ public class Short {
         Log.warning("Ou a criar o short " + urlWithToken);
         return new Short(shortId, ownerId, urlWithToken, timestamp, (int) totLikes);
     }
+
 }

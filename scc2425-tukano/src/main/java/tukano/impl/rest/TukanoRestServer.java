@@ -34,10 +34,11 @@ public class TukanoRestServer extends Application {
 	public TukanoRestServer() {
 		serverURI = String.format(SERVER_BASE_URI, IP.hostname(), PORT);
 		Log.warning("######### hostname " + IP.hostname());
+
 		resources.add(RestUsersResource.class);
 		resources.add(RestBlobsResource.class);
 		resources.add(RestShortsResource.class);
-
+    
 		Token.setSecret(Args.valueOf("-secret", "123"));
 		Log.warning("############## secret " + Token.get());
 
@@ -67,9 +68,10 @@ public class TukanoRestServer extends Application {
 	public static void main(String[] args) throws Exception {
 		Args.use(args);
 
-		//Token.setSecret("123");
 		// Props.load( Args.valueOf("-props", "").split(","));
 
 		new TukanoRestServer().start();
 	}
+
 }
+
