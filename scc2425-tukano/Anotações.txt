@@ -1,6 +1,10 @@
 No NoSQL não usamos Hibernate
 No PostgreSQL usamos Hibernate
 
-Containers para Likes/Followers ou Followers nos Users e Likes nos Shorts
+Ver cena de retornar Shorts e TotalLikes no getShorts
 
-Verificar os likes e follows no JavaShorts por causa dos containers
+Contar os Likes
+
+Quando user não existe e se tenta criar um short dá 500
+
+Quando se tenta dar like num short que não existe dá 500
