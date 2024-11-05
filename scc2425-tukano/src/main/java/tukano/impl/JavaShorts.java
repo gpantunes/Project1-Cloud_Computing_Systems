@@ -54,7 +54,8 @@ public class JavaShorts implements Shorts {
         return errorOrResult(okUser(userId, password), user -> {
 
             var shortId = format("%s+%s", userId, UUID.randomUUID());
-            var blobUrl = format("%s/%s/%s", TukanoRestServer.serverURI, Blobs.NAME, shortId);
+            var blobUrl = format("%s/%s/%s", "https://scc-backend-70231-70735.azurewebsites.net/rest", Blobs.NAME, shortId);
+            Log.warning("################ blob url " + blobUrl);
             var shrt = new Short(shortId, userId, blobUrl);
 
             return errorOrValue(CosmosDBShorts.getInstance().insertOne(shrt),
