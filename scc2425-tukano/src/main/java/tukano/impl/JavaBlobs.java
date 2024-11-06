@@ -73,13 +73,13 @@ public class JavaBlobs implements Blobs {
 		if (!validBlobId(userId, token))
 			return error(FORBIDDEN);
 
-		/*List<String> shortList = JavaShorts.getInstance().getShorts(userId).value();
+		List<String> shortList = JavaShorts.getInstance().getShorts(userId).value();
 
 		for (String shrt : shortList) {
 			Log.info("Está a apagar o blob: " + shrt);
 			String shortId = shrt.substring(shrt.indexOf("ShortId: ") + 9, shrt.indexOf(" TotalLikes:"));
 			this.delete(shortId, token);
-		}*/
+		}
 
 		return storage.delete(toPath(userId));
 	}
@@ -87,6 +87,7 @@ public class JavaBlobs implements Blobs {
 	private boolean validBlobId(String blobId, String token) {
 		Log.info("############ token: " + token);
 		return Token.isValid(token, blobId);
+		// return true;
 	}
 
 	private String toPath(String blobId) {

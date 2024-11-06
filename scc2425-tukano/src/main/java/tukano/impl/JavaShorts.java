@@ -62,24 +62,30 @@ public class JavaShorts implements Shorts {
         return errorOrResult(okUser(userId, password), user -> {
 
             var shortId = format("%s+%s", userId, UUID.randomUUID());
-
-            var blobUrl = format("%s/%s/%s", TukanoRestServer.serverURI, Blobs.NAME,
+            var blobUrl = format("%s/%s/%s", "https://scc-backend-707352.azurewebsites.net/rest", Blobs.NAME,
                     shortId);
             Log.info("Tukano: " + TukanoRestServer.serverURI + " BlobName: " + Blobs.NAME);
-
+            // var blobUrl = format("%s/%s/%s", TukanoRestServer.serverURI, Blobs.NAME,
+            // shortId);
             var shrt = new Short(shortId, userId, blobUrl);
 
             Result<Short> shortDb = CosmosDB.getInstance("shorts").insertOne(shrt);
 
-            if (shortDb.isOK())
-                this.putInCache(shrt.getShortId(), shrt.toString());
+            if (shortDb.isOK()) {
+
+                try (Jedis jedis = RedisCache.getCachePool().getResource()) {
+                    jedis.set(shrt.getShortId(), shrt.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return Result.error(ErrorCode.INTERNAL_ERROR);
+                }
+            }
 
             return errorOrValue(shortDb,
                     s -> s.copyWithLikes_And_Token(0));
         });
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Result<Short> getShort(String shortId) {
         Log.info(() -> format("getShort : shortId = %s\n", shortId));
@@ -88,12 +94,30 @@ public class JavaShorts implements Shorts {
             return error(BAD_REQUEST);
         }
 
+        Result<List<Long>> like;
+
         try (Jedis jedis = RedisCache.getCachePool().getResource()) {
 
             var query = format("SELECT VALUE COUNT(l.shortId) FROM shorts l WHERE l.shortId = '%s'", shortId);
 
-            Result<List<Long>> like = (Result<List<Long>>) this.queryInCache(query, "likes", jedis,
-                    Long.class);
+            byte[] dataOnCache = jedis.get(String.valueOf(query.hashCode()).getBytes());
+
+            if (dataOnCache == null) {
+                like = CosmosDB.getInstance("likes").query(query, Long.class);
+                Log.info("Foi buscar os likes à dataBase");
+                if (like.isOK())
+                    jedis.setex(String.valueOf(query.hashCode()).getBytes(), 20, serialize(like.value()));
+            } else
+                like = Result.ok(deserializeList(dataOnCache, Long.class));
+
+        } catch (CosmosException e) {
+            return Result.error(errorCodeFromStatus(e.getStatusCode()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(ErrorCode.INTERNAL_ERROR);
+        }
+
+        try (Jedis jedis = RedisCache.getCachePool().getResource()) {
 
             String dataOnCache = jedis.get(shortId);
 
@@ -138,20 +162,20 @@ public class JavaShorts implements Shorts {
 
                 // Delete associated likes
                 var query1 = format("SELECT * FROM shorts l WHERE l.shortId = '%s'", shortId);
-                var result1 = CosmosDB.getInstance("likes").query(query1, Likes.class).value();
+                var result1 = CosmosDB.getInstance("shorts").query(query1, Likes.class).value();
 
-                for (Likes l : result1) {
-                    Result<Likes> like2 = (Result<Likes>) CosmosDB.getInstance("likes").deleteOne(l);
-                    if (like2.isOK())
-                        this.delInCache(l.getUserId() + "_" + shortId);
-
-                }
+                for (Likes l : result1)
+                    CosmosDB.getInstance("shorts").deleteOne(l);
 
                 // Delete the short
                 Result<Short> short2 = (Result<Short>) CosmosDB.getInstance("shorts").deleteOne(shrt);
 
-                if (short2.isOK())
-                    this.delInCache(shortId);
+                try (Jedis jedis = RedisCache.getCachePool().getResource()) {
+                    jedis.del(shortId);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return Result.error(ErrorCode.INTERNAL_ERROR);
+                }
 
                 // Delete associated blob
                 // JavaBlobs.getInstance().delete(shrt.getBlobUrl(), Token.get());
@@ -163,7 +187,6 @@ public class JavaShorts implements Shorts {
         });
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Result<List<String>> getShorts(String userId) {
         Log.info(() -> format("getShorts : userId = %s\n", userId));
@@ -172,8 +195,20 @@ public class JavaShorts implements Shorts {
 
             var query = format("SELECT VALUE s.id FROM shorts s WHERE s.ownerId = '%s'", userId);
 
-            Result<List<String>> data = (Result<List<String>>) this.queryInCache(query, "shorts", jedis,
-                    String.class);
+            String cacheKey = String.valueOf(query.hashCode());
+
+            byte[] dataOnCache = jedis.get(cacheKey.getBytes());
+
+            Result<List<String>> data;
+
+            if (dataOnCache == null) {
+                data = CosmosDB.getInstance("shorts").query(query, String.class);
+                if (data.isOK()) {
+                    Log.info("Foi buscar os shorts ao CosmosDB");
+                    jedis.setex(cacheKey.getBytes(), 20, serialize(data.value()));
+                }
+            } else
+                data = Result.ok(deserializeList(dataOnCache, String.class));
 
             List<String> l = new ArrayList<>();
 
@@ -192,7 +227,6 @@ public class JavaShorts implements Shorts {
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Result<Void> follow(String userId1, String userId2, boolean isFollowing, String password) {
         Log.info(() -> format("follow : userId1 = %s, userId2 = %s, isFollowing = %s, pwd = %s\n", userId1, userId2,
@@ -206,29 +240,22 @@ public class JavaShorts implements Shorts {
 
             if (res.isOK()) {
 
-                Result<Following> resDB;
-
-                if (isFollowing) {
-                    resDB = CosmosDB.getInstance("followers").insertOne(f);
-
-                    if (resDB.isOK())
-                        this.putInCache(userId1 + ":" + userId2, f.toString());
-
-                } else {
-                    resDB = (Result<Following>) CosmosDB.getInstance("followers").deleteOne(f);
-
-                    if (resDB.isOK())
-                        this.delInCache(userId1 + ":" + userId2);
-
+                try (Jedis jedis = RedisCache.getCachePool().getResource()) {
+                    jedis.set(userId1 + ":" + userId2, f.toString());
+                    Log.warning("Tudo ok na cache");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.warning("Entra no erro da cache");
+                    return Result.error(ErrorCode.INTERNAL_ERROR);
                 }
 
-                return errorOrVoid(res, resDB);
+                return errorOrVoid(res, isFollowing ? CosmosDB.getInstance("followers").insertOne(f)
+                        : CosmosDB.getInstance("followers").deleteOne(f));
             } else
                 return res;
         });
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Result<List<String>> followers(String userId, String password) {
         Log.info(() -> format("followers : userId = %s, pwd = %s\n", userId, password));
@@ -237,10 +264,23 @@ public class JavaShorts implements Shorts {
 
             var query = format("SELECT VALUE f.follower FROM followers f WHERE f.followee = '%s'", userId);
 
-            Result<List<String>> data = (Result<List<String>>) this.queryInCache(query, "followers", jedis,
-                    String.class);
+            String cacheKey = String.valueOf(query.hashCode());
 
-            return errorOrValue(okUser(userId, password), data);
+            byte[] dataOnCache = jedis.get(cacheKey.getBytes());
+
+            Result<List<String>> data;
+
+            if (dataOnCache == null) {
+                data = CosmosDB.getInstance("followers").query(query, String.class);
+                if (data.isOK()) {
+                    Log.info("Foi buscar os followers ao CosmosDB");
+                    jedis.setex(cacheKey.getBytes(), 60, serialize(data.value()));
+                }
+            } else
+                data = Result.ok(deserializeList(dataOnCache, String.class));
+
+            return errorOrValue(okUser(userId, password),
+                    data);
 
         } catch (CosmosException e) {
             return Result.error(errorCodeFromStatus(e.getStatusCode()));
@@ -251,7 +291,6 @@ public class JavaShorts implements Shorts {
 
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Result<Void> like(String shortId, String userId, boolean isLiked, String password) {
         Log.info(() -> format("like : shortId = %s, userId = %s, isLiked = %s, pwd = %s\n", shortId, userId, isLiked,
@@ -264,30 +303,19 @@ public class JavaShorts implements Shorts {
             Result<User> res = okUser(userId, password);
 
             if (res.isOK()) {
-
-                Result<Likes> resDB;
-
-                if (isLiked) {
-                    resDB = CosmosDB.getInstance("likes").insertOne(l);
-
-                    if (resDB.isOK())
-                        this.putInCache(userId + "_" + shortId, l.toString());
-
-                } else {
-                    resDB = (Result<Likes>) CosmosDB.getInstance("likes").deleteOne(l);
-
-                    if (resDB.isOK())
-                        this.delInCache(userId + "_" + shortId);
-
+                try (Jedis jedis = RedisCache.getCachePool().getResource()) {
+                    jedis.set(userId + "_" + shortId, l.toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return Result.error(ErrorCode.INTERNAL_ERROR);
                 }
-
-                return errorOrVoid(res, resDB);
+                return errorOrVoid(res, isLiked ? CosmosDB.getInstance("likes").insertOne(l)
+                        : CosmosDB.getInstance("likes").deleteOne(l));
             } else
                 return errorOrVoid(res, res);
         });
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Result<List<String>> likes(String shortId, String password) {
         Log.info(() -> format("likes : shortId = %s, pwd = %s\n", shortId, password));
@@ -298,8 +326,18 @@ public class JavaShorts implements Shorts {
 
                 var query = format("SELECT VALUE l.userId FROM likes l WHERE l.shortId = '%s'", shortId);
 
-                Result<List<String>> data = (Result<List<String>>) this.queryInCache(query, "likes", jedis,
-                        String.class);
+                byte[] dataOnCache = jedis.get(String.valueOf(query.hashCode()).getBytes());
+
+                Result<List<String>> data;
+
+                if (dataOnCache == null) {
+                    data = CosmosDB.getInstance("likes").query(query, String.class);
+                    if (data.isOK()) {
+                        Log.info("Foi buscar os likes ao CosmosDB");
+                        jedis.setex(String.valueOf(query.hashCode()).getBytes(), 60, serialize(data.value()));
+                    }
+                } else
+                    data = Result.ok(deserializeList(dataOnCache, String.class));
 
                 return errorOrValue(okUser(shrt.getOwnerId(), password), data);
 
@@ -313,7 +351,6 @@ public class JavaShorts implements Shorts {
         });
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Result<List<String>> getFeed(String userId, String password) {
         Log.info(() -> format("getFeed : userId = %s, pwd = %s\n", userId, password));
@@ -324,37 +361,93 @@ public class JavaShorts implements Shorts {
 
             var query1 = format("SELECT * FROM shorts s WHERE s.ownerId = '%s'", userId);
 
-            Result<List<Short>> data = (Result<List<Short>>) this.queryInCache(query1, "shorts", jedis, Short.class);
+            byte[] dataOnCache = jedis.get(String.valueOf(query1.hashCode()).getBytes());
+
+            Result<List<Short>> data;
+
+            if (dataOnCache == null) {
+                data = CosmosDB.getInstance("shorts").query(query1, Short.class);
+                if (data.isOK()) {
+                    Log.info("Foi buscar os shorts ao CosmosDB");
+                    jedis.setex(String.valueOf(query1.hashCode()).getBytes(), 60, serialize(data.value()));
+                }
+            } else
+                data = Result.ok(deserializeList(dataOnCache, Short.class));
 
             for (Short shrt : data.value())
                 l.add("ShortId: " + shrt.getShortId() + " TimeStamp: " + shrt.getTimestamp());
 
+        } catch (CosmosException e) {
+            return Result.error(errorCodeFromStatus(e.getStatusCode()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(ErrorCode.INTERNAL_ERROR);
+        }
+
+        try (Jedis jedis = RedisCache.getCachePool().getResource()) {
             var query2 = format("SELECT VALUE f.followee FROM followers f WHERE  f.follower = '%s'", userId);
 
-            Result<List<String>> data2 = (Result<List<String>>) this.queryInCache(query2, "followers", jedis,
-                    String.class);
+            byte[] dataOnCache = jedis.get(String.valueOf(query2.hashCode()).getBytes());
+
+            Result<List<String>> data;
+
+            if (dataOnCache == null) {
+                data = CosmosDB.getInstance("followers").query(query2, String.class);
+                if (data.isOK()) {
+                    Log.info("Foi buscar os followes ao CosmosDB");
+                    jedis.setex(String.valueOf(query2.hashCode()).getBytes(), 60, serialize(data.value()));
+                }
+            } else
+                data = Result.ok(deserializeList(dataOnCache, String.class));
 
             Log.warning("A entrar nos shorts dos meus seguidores");
-            for (String s : data2.value()) {
+            for (String s : data.value()) {
                 Log.warning(s);
 
-                var query3 = format("SELECT * FROM shorts s WHERE s.ownerId = '%s' ORDER BY s.timestamp DESC",
-                        s);
+                try (Jedis jedis2 = RedisCache.getCachePool().getResource()) {
 
-                Result<List<Short>> data3 = (Result<List<Short>>) this.queryInCache(query3, "shorts", jedis,
-                        Short.class);
+                    var query3 = format(
+                            "SELECT * FROM shorts s WHERE s.ownerId = '%s' ORDER BY s.timestamp DESC",
+                            s);
 
-                for (Short shrt : data3.value())
-                    l.add("ShortId: " + shrt.getShortId() + " TimeStamp: " + shrt.getTimestamp());
+                    String cacheKey = String.valueOf(query3.hashCode());
+
+                    byte[] dataOnCache2 = jedis2.get(cacheKey.getBytes());
+
+                    Result<List<Short>> data2;
+
+                    if (dataOnCache2 == null) {
+                        data2 = CosmosDB.getInstance("shorts").query(query3, Short.class);
+                        if (data2.isOK()) {
+                            Log.info("Foi buscar os shorts dos followes ao CosmosDB");
+                            jedis2.setex(cacheKey.getBytes(), 20, serialize(data2.value()));
+                        }
+                    } else
+                        data2 = Result.ok(deserializeList(dataOnCache2, Short.class));
+
+                    for (Short shrt : data2.value())
+                        l.add("ShortId: " + shrt.getShortId() + " TimeStamp: " + shrt.getTimestamp());
+
+                } catch (CosmosException e) {
+                    return Result.error(errorCodeFromStatus(e.getStatusCode()));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return Result.error(ErrorCode.INTERNAL_ERROR);
+                }
 
             }
+
+        } catch (CosmosException e) {
+            return Result.error(errorCodeFromStatus(e.getStatusCode()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(ErrorCode.INTERNAL_ERROR);
         }
 
         return errorOrValue(okUser(userId, password), l);
 
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Result<Void> deleteAllShorts(String userId, String password, String token) {
         Log.info(() -> format("deleteAllShorts : userId = %s, password = %s, token = %s\n", userId, password, token));
@@ -363,49 +456,102 @@ public class JavaShorts implements Shorts {
             return error(FORBIDDEN);
         }
 
+        Log.warning("Está a tentar apagar os shorts");
+
+        // delete shorts
         try (Jedis jedis = RedisCache.getCachePool().getResource()) {
 
-            // delete shorts
-            Log.warning("Está a tentar apagar os shorts");
             var query1 = format("SELECT * FROM shorts s WHERE s.ownerId = '%s'", userId);
 
-            Result<List<Short>> data = (Result<List<Short>>) this.queryInCache(query1, "shorts", jedis,
-                    Short.class);
+            String cacheKey = String.valueOf(query1.hashCode());
+
+            byte[] dataOnCache = jedis.get(cacheKey.getBytes());
+
+            Result<List<Short>> data;
+
+            if (dataOnCache == null) {
+                data = CosmosDB.getInstance("shorts").query(query1, Short.class);
+                if (data.isOK()) {
+                    Log.info("Foi buscar os shorts ao CosmosDB");
+                    jedis.setex(cacheKey.getBytes(), 20, serialize(data.value()));
+                }
+            } else
+                data = Result.ok(deserializeList(dataOnCache, Short.class));
 
             for (Short s : data.value()) {
-                Result<Short> shrt = (Result<Short>) CosmosDB.getInstance("shorts").deleteOne(s);
-                if (shrt.isOK())
-                    jedis.del(s.getShortId());
+                CosmosDB.getInstance("shorts").deleteOne(s);
+                jedis.del(s.getShortId());
                 Log.warning("Apagou 1 short");
             }
 
-            // delete follows
-            Log.warning("Está a tentar apagar os follows");
+        } catch (CosmosException e) {
+            return Result.error(errorCodeFromStatus(e.getStatusCode()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(ErrorCode.INTERNAL_ERROR);
+        }
+
+        Log.warning("Está a tentar apagar os follows");
+
+        // delete follows
+        try (Jedis jedis = RedisCache.getCachePool().getResource()) {
+
             var query2 = format("SELECT * FROM followers f WHERE f.follower = '%s' OR f.followee = '%s'", userId,
                     userId);
 
-            Result<List<Following>> data2 = (Result<List<Following>>) this.queryInCache(query2, "followers", jedis,
-                    Following.class);
+            String cacheKey = String.valueOf(query2.hashCode());
 
-            for (Following f : data2.value()) {
-                Result<Following> fol = (Result<Following>) CosmosDB.getInstance("followers").deleteOne(f);
-                if (fol.isOK())
-                    jedis.del(f.getFollower() + ":" + f.getFollowee());
+            byte[] dataOnCache = jedis.get(cacheKey.getBytes());
+
+            Result<List<Following>> data;
+
+            if (dataOnCache == null) {
+                data = CosmosDB.getInstance("followers").query(query2, Following.class);
+                if (data.isOK()) {
+                    Log.info("Foi buscar os followers ao CosmosDB");
+                    jedis.setex(cacheKey.getBytes(), 20, serialize(data.value()));
+                }
+            } else
+                data = Result.ok(deserializeList(dataOnCache, Following.class));
+
+            for (Following f : data.value()) {
+                CosmosDB.getInstance("followers").deleteOne(f);
+                jedis.del(f.getFollower() + ":" + f.getFollowee());
                 Log.warning("Apagou 1 Follow");
             }
 
-            // delete likes
-            Log.warning("Está a tentar apagar os likes");
+        } catch (CosmosException e) {
+            return Result.error(errorCodeFromStatus(e.getStatusCode()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error(ErrorCode.INTERNAL_ERROR);
+        }
+
+        Log.warning("Está a tentar apagar os likes");
+
+        // delete likes
+        try (Jedis jedis = RedisCache.getCachePool().getResource()) {
 
             var query3 = format("SELECT * FROM likes l WHERE l.ownerId = '%s' OR l.userId = '%s'", userId, userId);
 
-            Result<List<Likes>> data3 = (Result<List<Likes>>) this.queryInCache(query3, "likes", jedis,
-                    Likes.class);
+            String cacheKey = String.valueOf(query3.hashCode());
 
-            for (Likes l : data3.value()) {
-                Result<Likes> lik = (Result<Likes>) CosmosDB.getInstance("likes").deleteOne(l);
-                if (lik.isOK())
-                    jedis.del(l.getUserId() + "_" + l.getShortId());
+            byte[] dataOnCache = jedis.get(cacheKey.getBytes());
+
+            Result<List<Likes>> data;
+
+            if (dataOnCache == null) {
+                data = CosmosDB.getInstance("likes").query(query3, Likes.class);
+                if (data.isOK()) {
+                    Log.info("Foi buscar os likes ao CosmosDB");
+                    jedis.setex(cacheKey.getBytes(), 20, serialize(data.value()));
+                }
+            } else
+                data = Result.ok(deserializeList(dataOnCache, Likes.class));
+
+            for (Likes l : data.value()) {
+                CosmosDB.getInstance("likes").deleteOne(l);
+                jedis.del(l.getUserId() + "_" + l.getShortId());
                 Log.warning("Apagou 1 Like");
             }
 
@@ -472,51 +618,6 @@ public class JavaShorts implements Shorts {
         } else {
             return error(res.error());
         }
-    }
-
-    private Result<Void> putInCache(String id, String obj) {
-        try (Jedis jedis = RedisCache.getCachePool().getResource()) {
-
-            jedis.set(id, obj);
-            return ok();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.error(ErrorCode.INTERNAL_ERROR);
-        }
-    }
-
-    private Result<Void> delInCache(String id) {
-
-        try (Jedis jedis = RedisCache.getCachePool().getResource()) {
-
-            jedis.del(id);
-            Log.info("Apagou like da cache");
-            return ok();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.error(ErrorCode.INTERNAL_ERROR);
-        }
-    }
-
-    private <T> Result<?> queryInCache(String query, String containerName, Jedis jedis, Class<T> clazz) {
-
-        byte[] dataOnCache = jedis.get(String.valueOf(query.hashCode()).getBytes());
-
-        Result<List<T>> data;
-
-        if (dataOnCache == null) {
-            data = CosmosDB.getInstance("followers").query(query, clazz);
-            if (data.isOK()) {
-                Log.info("Foi buscar os followes ao CosmosDB");
-                jedis.setex(String.valueOf(query.hashCode()).getBytes(), 60, serialize(data.value()));
-            }
-        } else
-            data = Result.ok(deserializeList(dataOnCache, clazz));
-
-        return data;
-
     }
 
     static Result.ErrorCode errorCodeFromStatus(int status) {
