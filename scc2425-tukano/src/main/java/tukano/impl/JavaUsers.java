@@ -47,15 +47,18 @@ public class JavaUsers implements Users {
 		if (badUserInfo(user))
 			return error(BAD_REQUEST);
 
-		try (Jedis jedis = RedisCache.getCachePool().getResource()) {
-			jedis.set(user.userId(), user.toString());
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Result.error(ErrorCode.INTERNAL_ERROR);
+		Result<String> res = errorOrValue(CosmosDBUsers.insertOne(user), user.getUserId());
+
+		if (res.isOK()) {
+			try (Jedis jedis = RedisCache.getCachePool().getResource()) {
+				jedis.set(user.userId(), user.toString());
+			} catch (Exception e) {
+				e.printStackTrace();
+				return Result.error(ErrorCode.INTERNAL_ERROR);
+			}
 		}
 
-		Log.info("Alfredo");
-		return errorOrValue(CosmosDBUsers.insertOne(user), user.getUserId());
+		return res;
 	}
 
 	@Override
@@ -78,10 +81,12 @@ public class JavaUsers implements Users {
 			} else {
 				Result<User> userRes = validatedUserOrError(CosmosDBUsers.getOne(userId, User.class),
 						pwd);
-				User item = userRes.value();
-				Log.info("%%%%%%%%%%%%%%%%%%% foi buscar ao cosmos " + item);
-				jedis.set(userId, item.toString());
-				Log.info("&&&&&&&&&&&&&&&&&& meteu no jedis");
+				if (userRes.isOK()) {
+					User item = userRes.value();
+					Log.info("%%%%%%%%%%%%%%%%%%% foi buscar ao cosmos " + item);
+					jedis.set(userId, item.toString());
+					Log.info("&&&&&&&&&&&&&&&&&& meteu no jedis");
+				}
 				return userRes;
 			}
 
@@ -106,11 +111,13 @@ public class JavaUsers implements Users {
 
 		User newUser = u1.updateFrom(other);
 
-		try (Jedis jedis = RedisCache.getCachePool().getResource()) {
-			jedis.set(userId, newUser.toString());
-		} catch (Exception e) {
-			e.printStackTrace();
-			return Result.error(ErrorCode.INTERNAL_ERROR);
+		if (oldUser.isOK()) {
+			try (Jedis jedis = RedisCache.getCachePool().getResource()) {
+				jedis.set(userId, newUser.toString());
+			} catch (Exception e) {
+				e.printStackTrace();
+				return Result.error(ErrorCode.INTERNAL_ERROR);
+			}
 		}
 
 		return errorOrResult(oldUser, user -> CosmosDBUsers.updateOne(newUser));
@@ -133,11 +140,11 @@ public class JavaUsers implements Users {
 						e.printStackTrace();
 						return Result.error(ErrorCode.INTERNAL_ERROR);
 					}
-					
+
 					// Delete user shorts and related info asynchronously in a separate thread
 					Executors.defaultThreadFactory().newThread(() -> {
-						JavaShorts.getInstance().deleteAllShorts(userId, pwd, Token.get(userId));
 						JavaBlobs.getInstance().deleteAllBlobs(userId, Token.get(userId));
+						JavaShorts.getInstance().deleteAllShorts(userId, pwd, Token.get(userId));
 					}).start();
 
 					return (Result<User>) CosmosDBUsers.deleteOne(user);
