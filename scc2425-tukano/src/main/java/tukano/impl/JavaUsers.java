@@ -1,6 +1,7 @@
 package tukano.impl;
 
 import static java.lang.String.format;
+import static tukano.api.Result.ok;
 import static tukano.api.Result.error;
 import static tukano.api.Result.errorOrResult;
 import static tukano.api.Result.errorOrValue;
@@ -49,17 +50,10 @@ public class JavaUsers implements Users {
 
 		Result<String> res = errorOrValue(CosmosDBUsers.insertOne(user), user.getUserId());
 
-		if (res.isOK()) {
-			try (Jedis jedis = RedisCache.getCachePool().getResource()) {
-				jedis.set(user.userId(), user.toString());
-			} catch (Exception e) {
-				e.printStackTrace();
-				return Result.error(ErrorCode.INTERNAL_ERROR);
-			}
-		}
+		if (res.isOK())
+			this.putInCache(user.userId(), user.toString());
 
 		return res;
-
 	}
 
 	@Override
@@ -82,14 +76,12 @@ public class JavaUsers implements Users {
 			} else {
 				Result<User> userRes = validatedUserOrError(CosmosDBUsers.getOne(userId, User.class),
 						pwd);
-
 				if (userRes.isOK()) {
 					User item = userRes.value();
 					Log.info("%%%%%%%%%%%%%%%%%%% foi buscar ao cosmos " + item);
 					jedis.set(userId, item.toString());
 					Log.info("&&&&&&&&&&&&&&&&&& meteu no jedis");
 				}
-
 				return userRes;
 			}
 
@@ -114,20 +106,14 @@ public class JavaUsers implements Users {
 
 		User newUser = u1.updateFrom(other);
 
-		if (oldUser.isOK()) {
-			try (Jedis jedis = RedisCache.getCachePool().getResource()) {
-				jedis.set(userId, newUser.toString());
-			} catch (Exception e) {
-				e.printStackTrace();
-				return Result.error(ErrorCode.INTERNAL_ERROR);
-			}
+		Result<User> userDB = CosmosDBUsers.updateOne(newUser);
 
-		}
+		if (userDB.isOK())
+			this.putInCache(userId, newUser.toString());
 
-		return errorOrResult(oldUser, user -> CosmosDBUsers.updateOne(newUser));
+		return errorOrResult(oldUser, user -> userDB);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Result<User> deleteUser(String userId, String pwd) {
 		Log.info(() -> format("deleteUser : userId = %s, pwd = %s\n", userId, pwd));
@@ -138,23 +124,17 @@ public class JavaUsers implements Users {
 		return errorOrResult(validatedUserOrError(CosmosDBUsers.getOne(userId, User.class), pwd),
 				user -> {
 
-					try (Jedis jedis = RedisCache.getCachePool().getResource()) {
-						jedis.del(userId);
-					} catch (Exception e) {
-						e.printStackTrace();
-						return Result.error(ErrorCode.INTERNAL_ERROR);
-					}
-
-					JavaBlobs.getInstance().deleteAllBlobs(userId, Token.get(userId));
+					Result<User> userRes = CosmosDBUsers.getOne(userId, User.class);
 
 					// Delete user shorts and related info asynchronously in a separate thread
 					Executors.defaultThreadFactory().newThread(() -> {
-						
+						JavaBlobs.getInstance().deleteAllBlobs(userId, Token.get(userId));
 						JavaShorts.getInstance().deleteAllShorts(userId, pwd, Token.get(userId));
-
+						CosmosDBUsers.deleteOne(user);
 					}).start();
 
-					return (Result<User>) CosmosDBUsers.deleteOne(user);
+					this.delInCache(userId);
+					return userRes;
 
 				});
 	}
@@ -176,7 +156,8 @@ public class JavaUsers implements Users {
 			if (dataOnCache == null) {
 				data = CosmosDBUsers.query(query, User.class);
 				Log.info("Foi buscar os users à CosmosDB");
-				jedis.setex(cacheKey.getBytes(), 60, serialize(data.value()));
+				if (data.isOK())
+					jedis.setex(cacheKey.getBytes(), 20, serialize(data.value()));
 			} else
 				data = Result.ok(deserializeList(dataOnCache));
 
@@ -242,6 +223,33 @@ public class JavaUsers implements Users {
 
 	private boolean badUpdateUserInfo(String userId, String pwd, User info) {
 		return (userId == null || pwd == null || info.getUserId() != null && !userId.equals(info.getUserId()));
+	}
+
+	private Result<Void> putInCache(String id, String obj) {
+		try (Jedis jedis = RedisCache.getCachePool().getResource()) {
+
+			jedis.set(id, obj);
+			Log.info("Adicionou objeto à cache");
+			return ok();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Result.error(ErrorCode.INTERNAL_ERROR);
+		}
+	}
+
+	private Result<Void> delInCache(String id) {
+
+		try (Jedis jedis = RedisCache.getCachePool().getResource()) {
+
+			jedis.del(id);
+			Log.info("Apagou objeto da cache");
+			return ok();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Result.error(ErrorCode.INTERNAL_ERROR);
+		}
 	}
 
 	static Result.ErrorCode errorCodeFromStatus(int status) {

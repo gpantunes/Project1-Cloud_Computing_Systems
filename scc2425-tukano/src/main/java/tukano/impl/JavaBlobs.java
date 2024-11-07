@@ -2,6 +2,7 @@ package tukano.impl;
 
 import static java.lang.String.format;
 import static tukano.api.Result.error;
+import static tukano.api.Result.ok;
 import static tukano.api.Result.ErrorCode.FORBIDDEN;
 
 import java.util.logging.Logger;
@@ -40,12 +41,10 @@ public class JavaBlobs implements Blobs {
 		Log.info(() -> format("upload : blobId = %s, sha256 = %s, token = %s\n", blobId, Hex.of(Hash.sha256(bytes)),
 				token));
 
-
 		if (!validBlobId(blobId, token))
 			return error(FORBIDDEN);
 
 		return storage.upload(toPath(blobId), bytes);
-
 	}
 
 	@Override
@@ -56,7 +55,6 @@ public class JavaBlobs implements Blobs {
 			return error(FORBIDDEN);
 
 		return storage.download(toPath(blobId));
-
 	}
 
 	@Override
@@ -66,6 +64,7 @@ public class JavaBlobs implements Blobs {
 		if (!validBlobId(blobId, token))
 			return error(FORBIDDEN);
 
+		Log.info("Acabou de apagar um blob");
 		return storage.delete(toPath(blobId));
 	}
 
@@ -81,21 +80,19 @@ public class JavaBlobs implements Blobs {
 		for (String shrt : shortList) {
 			Log.info("Está a apagar o blob: " + shrt);
 			String shortId = shrt.substring(shrt.indexOf("ShortId: ") + 9, shrt.indexOf(" TotalLikes:"));
-			this.delete(shortId, token);
+			storage.delete(toPath(shortId.trim()));
 		}
 
-		return storage.delete(toPath(userId));
+		Log.info("Acabou de apagar os blobs");
+		return ok();
 	}
 
 	private boolean validBlobId(String blobId, String token) {
 		Log.info("############ token: " + token);
 		return Token.isValid(token, blobId);
-
 	}
 
 	private String toPath(String blobId) {
 		return blobId.replace("+", "/");
 	}
-
 }
-
