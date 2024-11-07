@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import org.hsqldb.persist.Log;
+
 import com.azure.cosmos.CosmosException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -82,6 +84,7 @@ public class JavaShorts implements Shorts {
             }
 
             return errorOrValue(shortDb,
+
                     s -> s.copyWithLikes_And_Token(0));
         });
     }
@@ -105,8 +108,10 @@ public class JavaShorts implements Shorts {
             if (dataOnCache == null) {
                 like = CosmosDB.getInstance("likes").query(query, Long.class);
                 Log.info("Foi buscar os likes à dataBase");
+
                 if (like.isOK())
                     jedis.setex(String.valueOf(query.hashCode()).getBytes(), 20, serialize(like.value()));
+
             } else
                 like = Result.ok(deserializeList(dataOnCache, Long.class));
 
@@ -133,12 +138,14 @@ public class JavaShorts implements Shorts {
             } else {
                 Result<Short> shortRes = errorOrValue(CosmosDB.getInstance("shorts").getOne(shortId, Short.class),
                         shrt -> shrt.copyWithLikes_And_Token(likes.get(0)));
+
                 if (shortRes.isOK()) {
                     Short item = shortRes.value();
                     Log.info("%%%%%%%%%%%%%%%%%%% foi buscar ao cosmos " + item);
                     jedis.set(shortId, item.toString());
                     Log.info("&&&&&&&&&&&&&&&&&& meteu no jedis");
                 }
+
                 return shortRes;
             }
 
@@ -152,9 +159,11 @@ public class JavaShorts implements Shorts {
     }
 
     @SuppressWarnings("unchecked")
+
     @Override
     public Result<Void> deleteShort(String shortId, String password) {
         Log.info(() -> format("deleteShort : shortId = %s, pwd = %s\n", shortId, password));
+
 
         return errorOrResult(getShort(shortId), shrt -> {
 
@@ -170,6 +179,7 @@ public class JavaShorts implements Shorts {
                 // Delete the short
                 Result<Short> short2 = (Result<Short>) CosmosDB.getInstance("shorts").deleteOne(shrt);
 
+
                 try (Jedis jedis = RedisCache.getCachePool().getResource()) {
                     jedis.del(shortId);
                 } catch (Exception e) {
@@ -177,9 +187,9 @@ public class JavaShorts implements Shorts {
                     return Result.error(ErrorCode.INTERNAL_ERROR);
                 }
 
-                // Delete associated blob
-                // JavaBlobs.getInstance().delete(shrt.getBlobUrl(), Token.get());
+                // Delete associated blob         
                 JavaBlobs.getInstance().delete(shrt.getShortId(), Token.get());
+
 
                 return ok();
 
@@ -194,6 +204,7 @@ public class JavaShorts implements Shorts {
         try (Jedis jedis = RedisCache.getCachePool().getResource()) {
 
             var query = format("SELECT VALUE s.id FROM shorts s WHERE s.ownerId = '%s'", userId);
+
 
             String cacheKey = String.valueOf(query.hashCode());
 
@@ -253,6 +264,7 @@ public class JavaShorts implements Shorts {
                         : CosmosDB.getInstance("followers").deleteOne(f));
             } else
                 return res;
+
         });
     }
 
@@ -272,10 +284,12 @@ public class JavaShorts implements Shorts {
 
             if (dataOnCache == null) {
                 data = CosmosDB.getInstance("followers").query(query, String.class);
+
                 if (data.isOK()) {
                     Log.info("Foi buscar os followers ao CosmosDB");
                     jedis.setex(cacheKey.getBytes(), 60, serialize(data.value()));
                 }
+
             } else
                 data = Result.ok(deserializeList(dataOnCache, String.class));
 
@@ -313,6 +327,7 @@ public class JavaShorts implements Shorts {
                         : CosmosDB.getInstance("likes").deleteOne(l));
             } else
                 return errorOrVoid(res, res);
+
         });
     }
 
@@ -332,10 +347,12 @@ public class JavaShorts implements Shorts {
 
                 if (dataOnCache == null) {
                     data = CosmosDB.getInstance("likes").query(query, String.class);
+
                     if (data.isOK()) {
                         Log.info("Foi buscar os likes ao CosmosDB");
                         jedis.setex(String.valueOf(query.hashCode()).getBytes(), 60, serialize(data.value()));
                     }
+
                 } else
                     data = Result.ok(deserializeList(dataOnCache, String.class));
 
@@ -367,10 +384,12 @@ public class JavaShorts implements Shorts {
 
             if (dataOnCache == null) {
                 data = CosmosDB.getInstance("shorts").query(query1, Short.class);
+
                 if (data.isOK()) {
                     Log.info("Foi buscar os shorts ao CosmosDB");
                     jedis.setex(String.valueOf(query1.hashCode()).getBytes(), 60, serialize(data.value()));
                 }
+
             } else
                 data = Result.ok(deserializeList(dataOnCache, Short.class));
 
@@ -393,10 +412,12 @@ public class JavaShorts implements Shorts {
 
             if (dataOnCache == null) {
                 data = CosmosDB.getInstance("followers").query(query2, String.class);
+
                 if (data.isOK()) {
                     Log.info("Foi buscar os followes ao CosmosDB");
                     jedis.setex(String.valueOf(query2.hashCode()).getBytes(), 60, serialize(data.value()));
                 }
+
             } else
                 data = Result.ok(deserializeList(dataOnCache, String.class));
 
@@ -418,10 +439,12 @@ public class JavaShorts implements Shorts {
 
                     if (dataOnCache2 == null) {
                         data2 = CosmosDB.getInstance("shorts").query(query3, Short.class);
+
                         if (data2.isOK()) {
                             Log.info("Foi buscar os shorts dos followes ao CosmosDB");
                             jedis2.setex(cacheKey.getBytes(), 20, serialize(data2.value()));
                         }
+
                     } else
                         data2 = Result.ok(deserializeList(dataOnCache2, Short.class));
 
@@ -471,10 +494,12 @@ public class JavaShorts implements Shorts {
 
             if (dataOnCache == null) {
                 data = CosmosDB.getInstance("shorts").query(query1, Short.class);
+
                 if (data.isOK()) {
                     Log.info("Foi buscar os shorts ao CosmosDB");
                     jedis.setex(cacheKey.getBytes(), 20, serialize(data.value()));
                 }
+
             } else
                 data = Result.ok(deserializeList(dataOnCache, Short.class));
 
@@ -507,10 +532,12 @@ public class JavaShorts implements Shorts {
 
             if (dataOnCache == null) {
                 data = CosmosDB.getInstance("followers").query(query2, Following.class);
+
                 if (data.isOK()) {
                     Log.info("Foi buscar os followers ao CosmosDB");
                     jedis.setex(cacheKey.getBytes(), 20, serialize(data.value()));
                 }
+
             } else
                 data = Result.ok(deserializeList(dataOnCache, Following.class));
 
@@ -542,10 +569,12 @@ public class JavaShorts implements Shorts {
 
             if (dataOnCache == null) {
                 data = CosmosDB.getInstance("likes").query(query3, Likes.class);
+
                 if (data.isOK()) {
                     Log.info("Foi buscar os likes ao CosmosDB");
                     jedis.setex(cacheKey.getBytes(), 20, serialize(data.value()));
                 }
+
             } else
                 data = Result.ok(deserializeList(dataOnCache, Likes.class));
 

@@ -40,10 +40,12 @@ public class JavaBlobs implements Blobs {
 		Log.info(() -> format("upload : blobId = %s, sha256 = %s, token = %s\n", blobId, Hex.of(Hash.sha256(bytes)),
 				token));
 
+
 		if (!validBlobId(blobId, token))
 			return error(FORBIDDEN);
 
 		return storage.upload(toPath(blobId), bytes);
+
 	}
 
 	@Override
@@ -54,6 +56,7 @@ public class JavaBlobs implements Blobs {
 			return error(FORBIDDEN);
 
 		return storage.download(toPath(blobId));
+
 	}
 
 	@Override
@@ -87,10 +90,12 @@ public class JavaBlobs implements Blobs {
 	private boolean validBlobId(String blobId, String token) {
 		Log.info("############ token: " + token);
 		return Token.isValid(token, blobId);
-		// return true;
+
 	}
 
 	private String toPath(String blobId) {
 		return blobId.replace("+", "/");
 	}
+
 }
+

@@ -59,6 +59,7 @@ public class JavaUsers implements Users {
 		}
 
 		return res;
+
 	}
 
 	@Override
@@ -81,12 +82,14 @@ public class JavaUsers implements Users {
 			} else {
 				Result<User> userRes = validatedUserOrError(CosmosDBUsers.getOne(userId, User.class),
 						pwd);
+
 				if (userRes.isOK()) {
 					User item = userRes.value();
 					Log.info("%%%%%%%%%%%%%%%%%%% foi buscar ao cosmos " + item);
 					jedis.set(userId, item.toString());
 					Log.info("&&&&&&&&&&&&&&&&&& meteu no jedis");
 				}
+
 				return userRes;
 			}
 
@@ -118,6 +121,7 @@ public class JavaUsers implements Users {
 				e.printStackTrace();
 				return Result.error(ErrorCode.INTERNAL_ERROR);
 			}
+
 		}
 
 		return errorOrResult(oldUser, user -> CosmosDBUsers.updateOne(newUser));
@@ -147,6 +151,7 @@ public class JavaUsers implements Users {
 					Executors.defaultThreadFactory().newThread(() -> {
 						
 						JavaShorts.getInstance().deleteAllShorts(userId, pwd, Token.get(userId));
+
 					}).start();
 
 					return (Result<User>) CosmosDBUsers.deleteOne(user);

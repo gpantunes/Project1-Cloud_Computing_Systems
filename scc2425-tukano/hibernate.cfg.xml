@@ -6,6 +6,7 @@
 		<property name="connection.url">jdbc:postgresql://c-postgre-70231-70735.illbtqfddw4ggc.postgres.cosmos.azure.com</property>
 		<property name="connection.username">citus</property>
 		<property name="connection.password">P1scc...</property>
+
 		<!-- JDBC connection pool settings ... using built-in test pool -->
 		<property name="connection.pool_size">64</property>
 		<!-- Echo the SQL to stdout -->

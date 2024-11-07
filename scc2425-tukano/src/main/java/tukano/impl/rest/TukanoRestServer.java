@@ -20,6 +20,7 @@ public class TukanoRestServer extends Application {
 	static final String INETADDR_ANY = "0.0.0.0";
 	static String SERVER_BASE_URI = "https://%s/rest";
 
+
 	public static final int PORT = 8080;
 
 	public static String serverURI;
@@ -37,6 +38,7 @@ public class TukanoRestServer extends Application {
 		resources.add(RestUsersResource.class);
 		resources.add(RestBlobsResource.class);
 		resources.add(RestShortsResource.class);
+
 
 		Token.setSecret(Args.valueOf("-secret", "123"));
 		Log.warning("############## secret " + Token.get());
@@ -67,9 +69,12 @@ public class TukanoRestServer extends Application {
 	public static void main(String[] args) throws Exception {
 		Args.use(args);
 
-		//Token.setSecret("123");
+
 		// Props.load( Args.valueOf("-props", "").split(","));
 
 		new TukanoRestServer().start();
 	}
+
 }
+
+
