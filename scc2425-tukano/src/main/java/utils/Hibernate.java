@@ -29,7 +29,7 @@ public class Hibernate {
 
 	private Hibernate() {
 		try {
-			sessionFactory = new Configuration().configure(new File(HIBERNATE_CFG_FILE)).buildSessionFactory();
+			sessionFactory = new Configuration().configure(HIBERNATE_CFG_FILE).buildSessionFactory();
 
 		} catch (Exception e) {
 			e.printStackTrace();

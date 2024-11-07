@@ -2,13 +2,13 @@ package tukano.impl;
 
 import static java.lang.String.format;
 import static tukano.api.Result.error;
+import static tukano.api.Result.ok;
 import static tukano.api.Result.ErrorCode.FORBIDDEN;
 
 import java.util.logging.Logger;
 import java.util.*;
 
 import tukano.api.Blobs;
-import tukano.api.Shorts;
 import tukano.api.Result;
 import tukano.impl.rest.TukanoRestServer;
 import tukano.impl.storage.AzureBlobStorage;
@@ -63,6 +63,7 @@ public class JavaBlobs implements Blobs {
 		if (!validBlobId(blobId, token))
 			return error(FORBIDDEN);
 
+		Log.info("Acabou de apagar um blob");
 		return storage.delete(toPath(blobId));
 	}
 
@@ -78,16 +79,16 @@ public class JavaBlobs implements Blobs {
 		for (String shrt : shortList) {
 			Log.info("Está a apagar o blob: " + shrt);
 			String shortId = shrt.substring(shrt.indexOf("ShortId: ") + 9, shrt.indexOf(" TotalLikes:"));
-			this.delete(shortId, token);
+			storage.delete(toPath(shortId.trim()));
 		}
 
-		return storage.delete(toPath(userId));
+		Log.info("Acabou de apagar os blobs");
+		return ok();
 	}
 
 	private boolean validBlobId(String blobId, String token) {
 		Log.info("############ token: " + token);
 		return Token.isValid(token, blobId);
-		// return true;
 	}
 
 	private String toPath(String blobId) {
