@@ -26,7 +26,7 @@
                 <version>2.13.0</version>
                 <configuration>
                     <resourceGroup>scc-backend-rg-70735</resourceGroup>
-                    <appName>scc-backend-70735</appName>
+                    <appName>scc-backend-707352</appName>
                     <region>northeurope</region>
                     <runtime>
                         <os>linux</os>

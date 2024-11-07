@@ -18,7 +18,8 @@ public class TukanoRestServer extends Application {
 	final private static Logger Log = Logger.getLogger(TukanoRestServer.class.getName());
 
 	static final String INETADDR_ANY = "0.0.0.0";
-	static String SERVER_BASE_URI = "http://%s:%s/rest";
+	static String SERVER_BASE_URI = "https://%s/rest";
+
 
 	public static final int PORT = 8080;
 
@@ -32,13 +33,13 @@ public class TukanoRestServer extends Application {
 	private Set<Class<?>> resources = new HashSet<>();
 
 	public TukanoRestServer() {
-		serverURI = String.format(SERVER_BASE_URI, IP.hostname(), PORT);
+		serverURI = String.format(SERVER_BASE_URI, IP.hostname());
 		Log.warning("######### hostname " + IP.hostname());
-
 		resources.add(RestUsersResource.class);
 		resources.add(RestBlobsResource.class);
 		resources.add(RestShortsResource.class);
-    
+
+
 		Token.setSecret(Args.valueOf("-secret", "123"));
 		Log.warning("############## secret " + Token.get());
 
@@ -68,10 +69,12 @@ public class TukanoRestServer extends Application {
 	public static void main(String[] args) throws Exception {
 		Args.use(args);
 
+
 		// Props.load( Args.valueOf("-props", "").split(","));
 
 		new TukanoRestServer().start();
 	}
 
 }
+
 
