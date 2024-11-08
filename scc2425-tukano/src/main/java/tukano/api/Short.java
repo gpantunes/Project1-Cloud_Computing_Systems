@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import tukano.impl.Token;
 
 /**
@@ -18,6 +19,7 @@ import tukano.impl.Token;
  * A short is timestamped when it is created.
  *
  */
+@Table( name = "\"short\"")
 @Entity
 public class Short {
 
@@ -94,9 +96,8 @@ public class Short {
 	}
 
 	public Short copyWithLikes_And_Token(long totLikes) {
-        var urlWithToken = String.format("%s?token=%s", blobUrl, Token.get(shortId));
+		var urlWithToken = String.format("%s?token=%s", blobUrl, Token.get(shortId));
         Log.warning("Ou a criar o short " + urlWithToken);
         return new Short(shortId, ownerId, urlWithToken, timestamp, (int) totLikes);
     }
-
 }
