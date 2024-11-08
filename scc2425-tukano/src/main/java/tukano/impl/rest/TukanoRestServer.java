@@ -22,14 +22,14 @@ public class TukanoRestServer extends Application {
 
 	public static final int PORT = 8080;
 
-	private static String appName = "scc-backend-707352.azurewebsites.net";
+	private static String appName = "scc-backend-70231-70735.azurewebsites.net";
 
 	//private static String appName = "127.0.0.1:8080/tukano";
 
 	public static String serverURI;
 
 	//flags para definir o que se vai utilizar
-	public static final boolean cacheOn = false;
+	public static final boolean cacheOn = true;
 	public static final boolean sqlOn = true;
 
 	static {
@@ -41,14 +41,11 @@ public class TukanoRestServer extends Application {
 
 	public TukanoRestServer() {
 		serverURI = String.format(SERVER_BASE_URI, appName);
-		Log.warning("######### hostname " + IP.hostname());
 		resources.add(RestUsersResource.class);
 		resources.add(RestBlobsResource.class);
 		resources.add(RestShortsResource.class);
 
 		Token.setSecret(Args.valueOf("-secret", "123"));
-		Log.warning("############## secret " + Token.get());
-
 	}
 
 	@Override

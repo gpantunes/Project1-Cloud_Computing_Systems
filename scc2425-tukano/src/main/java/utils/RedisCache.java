@@ -11,8 +11,8 @@ import tukano.api.Short;
 
 public class RedisCache {
 
-    private static final String RedisHostname = "p1scc70735.redis.cache.windows.net";
-    private static final String RedisKey = "4In57Lg0WtCL65Z2rvXAC91JZYfaNeTRZAzCaJqH3lc=";
+    private static final String RedisHostname = "p1sccRedis.redis.cache.windows.net";
+    private static final String RedisKey = "a9zHwnLaykXuUcubmsr9pRkFygSeT6gWHAzCaJ0zj0c=";
     private static final int REDIS_PORT = 6380;
     private static final int REDIS_TIMEOUT = 1000;
     private static final boolean Redis_USE_TLS = true;

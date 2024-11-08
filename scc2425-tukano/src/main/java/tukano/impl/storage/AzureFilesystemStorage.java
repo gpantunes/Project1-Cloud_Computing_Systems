@@ -19,7 +19,6 @@ public class AzureFilesystemStorage implements AzureBlobStorage {
     private static final String BLOBS_CONTAINER_NAME = "shorts";
     private static final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=p1sccn;AccountKey=1QWd/3lqlYCq0VQKbK9e7c2TtN46jUQSzeBF0uIyJ3nXNy+ETt/g4yuIAdleODQDHR61wGom4OQ/+AStuJFp2Q==;EndpointSuffix=core.windows.net";
 
-
     @Override
     public Result<Void> upload(String filename, byte[] bytes) {
 
@@ -33,8 +32,6 @@ public class AzureFilesystemStorage implements AzureBlobStorage {
             var blob = containerClient.getBlobClient(filename);
             var data = BinaryData.fromBytes(bytes);
             blob.upload(data);
-
-            Log.info("################## blobclient " + blob + " " + bytes.length);
 
         } catch (Exception e) {
             e.printStackTrace();

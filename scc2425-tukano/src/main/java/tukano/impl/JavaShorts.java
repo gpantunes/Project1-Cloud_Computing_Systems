@@ -631,8 +631,6 @@ public class JavaShorts implements Shorts {
 
             String dataOnCache = jedis.get(id);
 
-            Log.info("################ tentou obter da cache " + dataOnCache);
-
             if (dataOnCache != null) {
                 Log.info("Obteve objeto da cache");
                 shortRes = errorOrValue(parseShortFromString(dataOnCache),

@@ -87,7 +87,6 @@ public class JavaBlobs implements Blobs {
 	}
 
 	private boolean validBlobId(String blobId, String token) {
-		Log.info("############ token: " + token);
 		return Token.isValid(token, blobId);
 	}
 

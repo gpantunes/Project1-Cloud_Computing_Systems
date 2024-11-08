@@ -77,10 +77,8 @@ public class JavaUsers implements Users {
 			try (Jedis jedis = RedisCache.getCachePool().getResource()) {
 				String dataOnCache = jedis.get(userId);
 
-				Log.info("################ tentou sacar do jedis " + dataOnCache);
-
 				if (dataOnCache != null) {
-					Log.info("%%%%%%%%%%%%%%%%%%% data on cache nao é null");
+					Log.info("%%%%%%%%%%%%%%%%%%% conseguiu obter da cache");
 					Result<User> item = validatedUserOrError(parseUserFromString(dataOnCache),
 							pwd);
 					return item;
