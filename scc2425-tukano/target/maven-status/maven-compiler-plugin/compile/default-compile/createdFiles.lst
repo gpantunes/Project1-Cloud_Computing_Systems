@@ -13,14 +13,21 @@ tukano\impl\storage\AzureBlobStorage.class
 tukano\impl\JavaBlobs.class
 tukano\api\User.class
 tukano\api\rest\RestUsers.class
-utils\CosmosDBShorts.class
+<<<<<<< HEAD
 tukano\impl\JavaUsers.class
 utils\CosmosDB.class
+=======
+utils\CosmosDBShorts.class
+tukano\impl\JavaUsers.class
+>>>>>>> ga
 utils\RedisCache.class
 utils\DB.class
 tukano\clients\rest\RestShortsClient$3.class
 tukano\impl\rest\TukanoRestServer.class
+<<<<<<< HEAD
+=======
 utils\CosmosDBUsers.class
+>>>>>>> ga
 tukano\clients\rest\RestShortsClient.class
 utils\Hibernate.class
 tukano\impl\storage\BlobStorage.class

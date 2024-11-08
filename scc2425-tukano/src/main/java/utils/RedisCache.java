@@ -1,7 +1,13 @@
 package utils;
 
+import static tukano.api.Result.ok;
+
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import tukano.api.Result;
+import tukano.api.Result.ErrorCode;
+import tukano.api.Short;
 
 public class RedisCache {
 
@@ -30,4 +36,5 @@ public class RedisCache {
         instance = new JedisPool(poolConfig, RedisHostname, REDIS_PORT, REDIS_TIMEOUT, RedisKey, Redis_USE_TLS);
         return instance;
     }
+
 }
