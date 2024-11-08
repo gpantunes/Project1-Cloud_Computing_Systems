@@ -72,9 +72,8 @@ public class JavaShorts implements Shorts {
         return errorOrResult(okUser(userId, password), user -> {
 
             var shortId = format("%s+%s", userId, UUID.randomUUID());
+            var blobUrl = format("%s/%s/%s", TukanoRestServer.serverURI, Blobs.NAME, shortId);
 
-            var blobUrl = format("%s/%s/%s", TukanoRestServer.serverURI, Blobs.NAME,
-                    shortId);
             Log.info("Tukano: " + TukanoRestServer.serverURI + " BlobName: " + Blobs.NAME);
 
             var shrt = new Short(shortId, userId, blobUrl);
@@ -465,8 +464,7 @@ public class JavaShorts implements Shorts {
     }
 
     /*
-     *
-     * this method was develop by chatGPT
+     * this method was developed by chatGPT
      * 
      * It serializes an object/set of objects to put in cache
      */
@@ -607,17 +605,11 @@ public class JavaShorts implements Shorts {
             Log.info("Cache não está ativa");
             if (sqlOn) {
                 data = Result.ok(DB.sql(query, clazz));
-
             } else {
-
                 data = CosmosDBLikes.query(query, clazz);
-
             }
-
         }
-
         return data;
-
     }
 
     /*
@@ -628,7 +620,6 @@ public class JavaShorts implements Shorts {
         Result<Short> shortRes;
 
         try (Jedis jedis = RedisCache.getCachePool().getResource()) {
-
             String dataOnCache = jedis.get(id);
 
             if (dataOnCache != null) {
@@ -660,7 +651,6 @@ public class JavaShorts implements Shorts {
         }
 
         return shortRes;
-
     }
 
     static Result.ErrorCode errorCodeFromStatus(int status) {

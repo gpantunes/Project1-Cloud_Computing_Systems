@@ -34,11 +34,6 @@ public class CosmosDB {
     private String containerName;
 
     public static synchronized CosmosDB getInstance(String containerName) {
-        /*
-         * if (instance != null) {
-         * return instance;
-         * }
-         */
 
         CosmosClient client = new CosmosClientBuilder()
                 .endpoint(CONNECTION_URL)

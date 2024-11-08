@@ -18,12 +18,11 @@ public class TukanoRestServer extends Application {
 	final private static Logger Log = Logger.getLogger(TukanoRestServer.class.getName());
 
 	static final String INETADDR_ANY = "0.0.0.0";
-	static String SERVER_BASE_URI = "http://%s/rest";
+	static String SERVER_BASE_URI = "https://%s/rest";
 
 	public static final int PORT = 8080;
 
 	private static String appName = "scc-backend-70231-70735.azurewebsites.net";
-
 	//private static String appName = "127.0.0.1:8080/tukano";
 
 	public static String serverURI;

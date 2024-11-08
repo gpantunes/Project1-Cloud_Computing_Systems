@@ -114,7 +114,6 @@ public class JavaUsers implements Users {
 				return validatedUserOrError(CosmosDBUsers.getOne(userId, User.class), pwd);
 
 		}
-
 	}
 
 	@Override
@@ -154,7 +153,6 @@ public class JavaUsers implements Users {
 
 		return errorOrResult(validatedUserOrError(userDB, pwd),
 				user -> {
-
 					// Delete user shorts and related info asynchronously in a separate thread
 					Executors.defaultThreadFactory().newThread(() -> {
 						JavaBlobs.getInstance().deleteAllBlobs(userId, Token.get(userId));
@@ -164,14 +162,12 @@ public class JavaUsers implements Users {
 							DB.deleteOne(user);
 						else
 							CosmosDBUsers.deleteOne(user);
-
 					}).start();
 
 					if (cacheOn)
 						this.delInCache(userId);
 
 					return userDB;
-
 				});
 	}
 
@@ -185,9 +181,7 @@ public class JavaUsers implements Users {
 			try (Jedis jedis = RedisCache.getCachePool().getResource()) {
 
 				String cacheKey = String.valueOf(query.hashCode());
-
 				byte[] dataOnCache = jedis.get(cacheKey.getBytes());
-
 				Result<List<User>> data;
 
 				if (dataOnCache == null) {
