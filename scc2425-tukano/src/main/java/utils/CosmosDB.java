@@ -20,10 +20,10 @@ import tukano.api.Result.ErrorCode;
 
 public class CosmosDB {
 
-    private static final String CONNECTION_URL = "https://p1cosmos.documents.azure.com:443/"; // replace with your
+    private static final String CONNECTION_URL = "https://p1cosmsos.documents.azure.com:443/"; // replace with your
                                                                                               // own
-    private static final String DB_KEY = "wC4GOD5tMZ5f4Xy0lQ7EC2Kd8an916nnHNDbcSCtu47e7JQ0HSjiiQfReZN4ekD6QYGFvStF9DOsACDbEH5N3g==";
-    private static final String DB_NAME = "scc2425";
+    private static final String DB_KEY = "20JeiR6MlWk08rG019R7inhAb1NnkT650YuYHQ2AzrTBE93Y1kYbMY105gZIrWusQ8LYejq97rKDACDbl3tO2w==";
+    private static final String DB_NAME = "p1cosmsos";
 
     private static Logger Log = Logger.getLogger(CosmosDB.class.getName());
 
@@ -34,11 +34,6 @@ public class CosmosDB {
     private String containerName;
 
     public static synchronized CosmosDB getInstance(String containerName) {
-        /*
-         * if (instance != null) {
-         * return instance;
-         * }
-         */
 
         CosmosClient client = new CosmosClientBuilder()
                 .endpoint(CONNECTION_URL)

@@ -20,10 +20,16 @@ public class TukanoRestServer extends Application {
 	static final String INETADDR_ANY = "0.0.0.0";
 	static String SERVER_BASE_URI = "https://%s/rest";
 
-
 	public static final int PORT = 8080;
 
+	private static String appName = "scc-backend-70231-70735.azurewebsites.net";
+	//private static String appName = "127.0.0.1:8080/tukano";
+
 	public static String serverURI;
+
+	//flags para definir o que se vai utilizar
+	public static final boolean cacheOn = true;
+	public static final boolean sqlOn = true;
 
 	static {
 		System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s");
@@ -33,16 +39,12 @@ public class TukanoRestServer extends Application {
 	private Set<Class<?>> resources = new HashSet<>();
 
 	public TukanoRestServer() {
-		serverURI = String.format(SERVER_BASE_URI, IP.hostname());
-		Log.warning("######### hostname " + IP.hostname());
+		serverURI = String.format(SERVER_BASE_URI, appName);
 		resources.add(RestUsersResource.class);
 		resources.add(RestBlobsResource.class);
 		resources.add(RestShortsResource.class);
 
-
 		Token.setSecret(Args.valueOf("-secret", "123"));
-		Log.warning("############## secret " + Token.get());
-
 	}
 
 	@Override
@@ -69,12 +71,9 @@ public class TukanoRestServer extends Application {
 	public static void main(String[] args) throws Exception {
 		Args.use(args);
 
-
+		//Token.setSecret("123");
 		// Props.load( Args.valueOf("-props", "").split(","));
 
 		new TukanoRestServer().start();
 	}
-
 }
-
-

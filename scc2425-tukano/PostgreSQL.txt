@@ -1,0 +1,39 @@
+CREATE TABLE "user" (
+    userId VARCHAR(255) PRIMARY KEY,        -- ID do usuário (chave primária, gerado automaticamente)
+    pwd VARCHAR(255) NOT NULL,          -- Senha
+    email VARCHAR(255) NOT NULL,        -- E-mail
+    displayName VARCHAR(255)           -- Nome de exibição
+);
+
+DROP TABLE "user";
+
+
+CREATE TABLE "short" (
+    shortId VARCHAR(255) PRIMARY KEY,      -- ID do Short (chave primária)
+    ownerId VARCHAR(255) NOT NULL,         -- ID do proprietário
+    blobUrl VARCHAR(255) NOT NULL,         -- URL do blob
+    timestamp BIGINT NOT NULL,             -- Timestamp
+    totalLikes INT NOT NULL                -- Total de likes
+);
+
+DROP TABLE "short";
+
+
+CREATE TABLE "likes" (
+    id VARCHAR(255) PRIMARY KEY,            -- ID do Like (chave primária)
+    userId VARCHAR(255) NOT NULL,           -- ID do usuário
+    shortId VARCHAR(255) NOT NULL,          -- ID do Short
+    ownerId VARCHAR(255) NOT NULL           -- ID do proprietário
+);
+
+DROP TABLE "likes";
+
+
+CREATE TABLE "followers" (
+    id VARCHAR(255) PRIMARY KEY,            -- ID do Follow (chave primária)
+    follower VARCHAR(255) NOT NULL,         -- ID do seguidor
+    followee VARCHAR(255) NOT NULL          -- ID do seguido
+);
+
+
+DROP TABLE "followers";

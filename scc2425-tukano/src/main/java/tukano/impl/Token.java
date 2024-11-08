@@ -24,10 +24,7 @@ public class Token {
 	public static String get(String id) {
 		var timestamp = System.currentTimeMillis();
 		Log.warning("ID: " + id + " Time: " + timestamp + "Secret: " + secret);
-
 		var signature = Hash.of(id, timestamp, secret);
-		Log.warning("############# sig " + signature);
-
 		return String.format("%s%s%s", timestamp, DELIMITER, signature);
 	}
 

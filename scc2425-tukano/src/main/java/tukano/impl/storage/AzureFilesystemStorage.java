@@ -1,15 +1,10 @@
 package tukano.impl.storage;
 
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
 import com.azure.core.util.BinaryData;
 import com.azure.storage.blob.BlobClient;
-import com.azure.storage.blob.BlobClientBuilder;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobContainerClientBuilder;
 import com.azure.storage.blob.specialized.BlobInputStream;
@@ -37,8 +32,6 @@ public class AzureFilesystemStorage implements AzureBlobStorage {
             var blob = containerClient.getBlobClient(filename);
             var data = BinaryData.fromBytes(bytes);
             blob.upload(data);
-
-            Log.info("################## blobclient " + blob + " " + bytes.length);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -102,8 +95,8 @@ public class AzureFilesystemStorage implements AzureBlobStorage {
     @Override
     public Result<Void> download(String filename, Consumer<byte[]> sink) {
         // Define the byte range (start and length) you want to download
-        long startRange = 0; // Starting byte position
-        int length = 1024; // Number of bytes to read
+        long startRange = 0;   // Starting byte position
+        int length = 1024;     // Number of bytes to read
 
         try {
             // Get container client
