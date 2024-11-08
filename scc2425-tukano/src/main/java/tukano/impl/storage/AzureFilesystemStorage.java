@@ -17,7 +17,7 @@ public class AzureFilesystemStorage implements AzureBlobStorage {
 
     private static Logger Log = Logger.getLogger(AzureFilesystemStorage.class.getName());
     private static final String BLOBS_CONTAINER_NAME = "shorts";
-    private static final String storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=p1sccn;AccountKey=1QWd/3lqlYCq0VQKbK9e7c2TtN46jUQSzeBF0uIyJ3nXNy+ETt/g4yuIAdleODQDHR61wGom4OQ/+AStuJFp2Q==;EndpointSuffix=core.windows.net";
+    private static final String storageConnectionString = "p1sccRedis.redis.cache.windows.net:6380,password=a9zHwnLaykXuUcubmsr9pRkFygSeT6gWHAzCaJ0zj0c=,ssl=True,abortConnect=False";
 
 
     @Override

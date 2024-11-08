@@ -3,9 +3,9 @@
     <session-factory>
         <!-- JDBC Database connection settings -->
         <property name="connection.driver_class">org.postgresql.Driver</property>
-        <property name="connection.url">jdbc:postgresql://c-postgre-70231-70735.illbtqfddw4ggc.postgres.cosmos.azure.com:5432/citus?ssl=true&amp;sslmode=require</property>
+        <property name="connection.url">jdbc:postgresql://c-postgre-70231-70735.illbtqfddw4ggc.postgres.cosmos.azure.com:5432/citus?user=citus&amp;password=P1scc...&amp;sslmode=require</property>
         <property name="connection.username">citus</property>
-        <property name="connection.password">S3cret1234</property>
+        <property name="connection.password">P1scc...</property>
 
         <!-- SSL settings for CosmosDB -->
         <property name="hibernate.connection.ssl">true</property>
