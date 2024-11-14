@@ -8,6 +8,8 @@ import static tukano.api.Result.errorOrValue;
 import static tukano.api.Result.ErrorCode.BAD_REQUEST;
 import static tukano.api.Result.ErrorCode.FORBIDDEN;
 
+import static tukano.auth.Authentication.login;
+
 //import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -17,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import redis.clients.jedis.Jedis;
 import tukano.api.Result;
 import tukano.api.Result.ErrorCode;
+import tukano.auth.Authentication;
 import tukano.impl.rest.TukanoRestServer;
 import tukano.api.User;
 import tukano.api.Users;
@@ -35,6 +38,8 @@ public class JavaUsers implements Users {
 	// flags para definir o que se vai utilizar
 	private static final boolean cacheOn = TukanoRestServer.cacheOn;
 	private static final boolean sqlOn = TukanoRestServer.sqlOn;
+
+	private static final Authentication auth = new Authentication();
 
 	synchronized public static Users getInstance() {
 		if (instance == null)
@@ -96,6 +101,8 @@ public class JavaUsers implements Users {
 						jedis.set(userId, item.toString());
 						Log.info("&&&&&&&&&&&&&&&&&& meteu no jedis");
 					}
+
+					userRes.setCookie(auth.login(userId, pwd)); // é preciso criar um objeto que junte o user e a cookie num tuplo para retornar Result<tuplo>
 					return userRes;
 				}
 

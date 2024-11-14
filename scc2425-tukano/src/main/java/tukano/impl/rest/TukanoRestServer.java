@@ -8,7 +8,10 @@ import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import jakarta.ws.rs.core.Application;
-
+import tukano.auth.Authentication;
+import tukano.auth.ControlResource;
+import tukano.auth.cookies.RequestCookiesCleanupFilter;
+import tukano.auth.cookies.RequestCookiesFilter;
 import tukano.impl.Token;
 import utils.Args;
 import utils.IP;
@@ -28,8 +31,8 @@ public class TukanoRestServer extends Application {
 	public static String serverURI;
 
 	//flags para definir o que se vai utilizar
-	public static final boolean cacheOn = true;
-	public static final boolean sqlOn = true;
+	public static final boolean cacheOn = false;
+	public static final boolean sqlOn = false;
 
 	static {
 		System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s: %5$s");
@@ -43,6 +46,11 @@ public class TukanoRestServer extends Application {
 		resources.add(RestUsersResource.class);
 		resources.add(RestBlobsResource.class);
 		resources.add(RestShortsResource.class);
+		
+		resources.add(ControlResource.class);
+		resources.add(RequestCookiesFilter.class);
+     	resources.add(RequestCookiesCleanupFilter.class);
+        resources.add(Authentication.class);
 
 		Token.setSecret(Args.valueOf("-secret", "123"));
 	}
